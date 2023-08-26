@@ -1,5 +1,6 @@
 package com.flux.discordbot.discord;
 
+import com.flux.discordbot.discord.command.CommandHandler;
 import com.flux.discordbot.discord.event.ReadyEvent;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -18,12 +19,13 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class JDAInitializer implements CommandLineRunner {
     private final ReadyEvent m_readyEvent;
+    private final CommandHandler m_commandHandler;
     @Getter
-    private static ShardManager shardManager;
+    private static ShardManager m_shardManager;
 
     @Override
     public void run(final String... args) {
-        DefaultShardManagerBuilder builder = DefaultShardManagerBuilder.createDefault("MTE0MDQxODIwNjA2NzA4MTI0Ng.G4l2tm.it5LGO-qtotBCV_wzmkwPEFEqsa0Nu9Z_eqaSg");
+        final DefaultShardManagerBuilder builder = DefaultShardManagerBuilder.createDefault("MTE0MDQxODIwNjA2NzA4MTI0Ng.G4l2tm.it5LGO-qtotBCV_wzmkwPEFEqsa0Nu9Z_eqaSg");
         builder.enableIntents(
                 GatewayIntent.MESSAGE_CONTENT, GatewayIntent.GUILD_MESSAGES,
                 GatewayIntent.GUILD_MEMBERS, GatewayIntent.DIRECT_MESSAGES, GatewayIntent.GUILD_PRESENCES
@@ -32,12 +34,11 @@ public class JDAInitializer implements CommandLineRunner {
         builder.setMemberCachePolicy(MemberCachePolicy.ALL);
         builder.setChunkingFilter(ChunkingFilter.ALL);
         builder.enableCache(CacheFlag.ONLINE_STATUS);
-        shardManager = builder.build();
-
-//        new CommandHandler();
+        m_shardManager = builder.build();
 
         // Register event listeners
-        shardManager.addEventListener(
+        m_shardManager.addEventListener(
+                m_commandHandler.getCommandClient(),
                 m_readyEvent
 //                new CommandHandler().getClient(), new ModalSubmitEvent(), new StringSelectionInteractionListener(), new ButtonClickEvent(),
         );
