@@ -79,8 +79,8 @@ public class StringSelectionInteractionListener extends ListenerAdapter {
 
                 p_stringSelectInteractionEvent.getJDA().getGuildById("1139719606186020904").createTextChannel("commission-" + commissionId)
                     .setParent(p_stringSelectInteractionEvent.getJDA().getCategoryById("1141428418328657930"))
-                    .addMemberPermissionOverride(freelancerMember.getIdLong(), List.of(Permission.VIEW_CHANNEL, Permission.VIEW_CHANNEL), Collections.emptyList())
-                    .addMemberPermissionOverride(commissionCreatorId, List.of(Permission.VIEW_CHANNEL, Permission.VIEW_CHANNEL), Collections.emptyList())
+                    .addMemberPermissionOverride(commission.getUserId(), List.of(Permission.VIEW_CHANNEL), Collections.emptyList())
+                    .addMemberPermissionOverride(commission.getApprovedFreelancerId(), List.of(Permission.VIEW_CHANNEL), Collections.emptyList())
                     .queue(textChannel -> {
                         textChannel.sendMessage(commissionEmbed(freelancerMember.getUser().getName(), commissionQuote, commissionDescription)).queue();
                 });
