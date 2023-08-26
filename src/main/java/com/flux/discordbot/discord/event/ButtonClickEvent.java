@@ -1,6 +1,9 @@
 package com.flux.discordbot.discord.event;
 
 import com.flux.discordbot.discord.utility.FluxEmbedBuilder;
+import com.flux.discordbot.entities.Commission;
+import com.flux.discordbot.repository.CommissionRepository;
+import lombok.AllArgsConstructor;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
@@ -13,18 +16,17 @@ import net.dv8tion.jda.api.interactions.components.selections.StringSelectMenu;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 import net.dv8tion.jda.internal.interactions.component.SelectMenuImpl;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-/**
- * @author Athena Development
- * @project FluxBot
- * @date 8/16/2023
- */
+@Service
+@AllArgsConstructor
 public class ButtonClickEvent extends ListenerAdapter {
+    private final CommissionRepository m_commissionRepository;
 
     private final Map<Long, ScheduledFuture<?>> deletionTasks = new HashMap<>();
     private final Map<Long, List<Long>> acceptedCommissions = new HashMap<>();
@@ -68,7 +70,14 @@ public class ButtonClickEvent extends ListenerAdapter {
                 long freelancerId = member.getIdLong();
 
                 acceptedCommissions.computeIfAbsent(freelancerId, k -> new ArrayList<>()).add(commissionMessageId);
-                CommissionDatabase.setApprovedFreelancerId(commissionMessageId, freelancerId);
+
+                final long channelId = Long.parseLong(p_buttonInteractionEvent.getMessage().getChannel().getId());
+                final Commission commission = m_commissionRepository.findCommissionByChannelId(channelId);
+
+                commission.setApprovedFreelancerId(freelancerId);
+
+                m_commissionRepository.save(commission);
+
                 p_buttonInteractionEvent.reply(acceptedCommissionEmbed(member)).queue();
             }
 

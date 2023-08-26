@@ -2,6 +2,9 @@ package com.flux.discordbot.discord.event;
 
 import com.flux.discordbot.discord.utility.CommissionData;
 import com.flux.discordbot.discord.utility.FluxEmbedBuilder;
+import com.flux.discordbot.entities.Commission;
+import com.flux.discordbot.repository.CommissionRepository;
+import lombok.AllArgsConstructor;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.channel.concrete.Category;
@@ -13,17 +16,16 @@ import net.dv8tion.jda.api.interactions.components.text.TextInputStyle;
 import net.dv8tion.jda.api.interactions.modals.Modal;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 
-/**
- * @author Athena Development
- * @project FluxBot
- * @date 8/16/2023
- */
+@AllArgsConstructor
+@Service
 public class StringSelectionInteractionListener extends ListenerAdapter {
+    private final CommissionRepository m_commissionRepository;
 
     @Override
     public void onStringSelectInteraction(@NotNull final StringSelectInteractionEvent p_stringSelectInteractionEvent) {
@@ -55,13 +57,15 @@ public class StringSelectionInteractionListener extends ListenerAdapter {
                 String selectedFreelancer = p_stringSelectInteractionEvent.getValues().get(0);
                 Member freelancerMember = p_stringSelectInteractionEvent.getGuild().getMemberById(selectedFreelancer);
 
-                long interactionChannelId = p_stringSelectInteractionEvent.getChannel().getIdLong();
-                long commissionId = CommissionDatabase.findCommissionIdByChannelId(interactionChannelId);
-                long commissionCreatorId = CommissionDatabase.getCommissionCreatorId(commissionId);
+                final long interactionChannelId = p_stringSelectInteractionEvent.getChannel().getIdLong();
 
-                Commission commission = CommissionDatabase.getCommission(commissionId);
-                String commissionDescription = commission.getDescription();
-                String commissionQuote = commission.getQuote();
+                final Commission commission = m_commissionRepository.findCommissionByChannelId(interactionChannelId);
+
+                final String commissionId = commission.getId();
+                final long commissionCreatorId = commission.getUserId();
+
+                final String commissionDescription = commission.getDescription();
+                final String commissionQuote = commission.getQuote();
 
                 if (freelancerMember == null) {
                     return;

@@ -2,6 +2,9 @@ package com.flux.discordbot.discord.event;
 
 import com.flux.discordbot.discord.utility.CommissionData;
 import com.flux.discordbot.discord.utility.FluxEmbedBuilder;
+import com.flux.discordbot.entities.Commission;
+import com.flux.discordbot.repository.CommissionRepository;
+import lombok.AllArgsConstructor;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent;
@@ -10,15 +13,14 @@ import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle;
 import net.dv8tion.jda.api.interactions.components.selections.StringSelectMenu;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 
-/**
- * @author Athena Development
- * @project FluxBot
- * @date 8/16/2023
- */
+@AllArgsConstructor
+@Service
 public class ModalSubmitEvent extends ListenerAdapter {
+    private final CommissionRepository m_commissionRepository;
 
     @Override
     public void onModalInteraction(@NotNull final ModalInteractionEvent p_modalInteractionEvent) {
@@ -38,12 +40,13 @@ public class ModalSubmitEvent extends ListenerAdapter {
                 }
 
                 // Create a Commission instance
-                Commission commission = new Commission();
+                final Commission commission = new Commission();
+                commission.setUserId(member.getIdLong());
                 commission.setCategory(commissionData);
                 commission.setDescription(p_modalInteractionEvent.getValue("description").getAsString());
                 commission.setQuote(p_modalInteractionEvent.getValue("quote").getAsString());
 
-                CommissionDatabase.addCommission(member.getIdLong(), commission);
+                m_commissionRepository.save(commission);
 
                 p_modalInteractionEvent.getJDA().getGuildById("1141049396453187690").createTextChannel(member.getUser().getName()).setParent(p_modalInteractionEvent.getJDA().getCategoryById(commissionData)).queue(textChannel -> {
                     textChannel.sendMessage(getCommissionEmbed(member.getUser().getName(), p_modalInteractionEvent.getValue("description").getAsString(), p_modalInteractionEvent.getValue("quote").getAsString())).queue();
