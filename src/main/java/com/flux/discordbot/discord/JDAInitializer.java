@@ -1,7 +1,10 @@
 package com.flux.discordbot.discord;
 
 import com.flux.discordbot.discord.command.CommandHandler;
+import com.flux.discordbot.discord.event.ButtonClickEvent;
+import com.flux.discordbot.discord.event.ModalSubmitEvent;
 import com.flux.discordbot.discord.event.ReadyEvent;
+import com.flux.discordbot.discord.event.StringSelectionInteractionListener;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -19,6 +22,9 @@ import org.springframework.stereotype.Component;
 @Slf4j
 public class JDAInitializer implements CommandLineRunner {
     private final ReadyEvent m_readyEvent;
+    private final ButtonClickEvent m_buttonClickEvent;
+    private final ModalSubmitEvent m_modalSubmitEvent;
+    private final StringSelectionInteractionListener m_stringSelectionInteractionListener;
     private final CommandHandler m_commandHandler;
     @Getter
     private static ShardManager m_shardManager;
@@ -39,8 +45,7 @@ public class JDAInitializer implements CommandLineRunner {
         // Register event listeners
         m_shardManager.addEventListener(
                 m_commandHandler.getCommandClient(),
-                m_readyEvent
-//                new CommandHandler().getClient(), new ModalSubmitEvent(), new StringSelectionInteractionListener(), new ButtonClickEvent(),
+                m_readyEvent, m_buttonClickEvent, m_modalSubmitEvent, m_stringSelectionInteractionListener
         );
 
         // Log the bots version upon successful startup
