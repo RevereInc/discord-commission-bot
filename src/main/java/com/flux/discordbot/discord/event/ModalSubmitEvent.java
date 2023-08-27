@@ -37,7 +37,7 @@ public class ModalSubmitEvent extends ListenerAdapter {
                 assert member != null;
 
                 // Category ID
-                String commissionData = CommissionData.getSelectedCategory(member);
+                final String commissionData = CommissionData.getSelectedCategory(member);
 
                 if(p_modalInteractionEvent.getJDA().getCategoryById(commissionData) == null) {
                     p_modalInteractionEvent.reply("The selected category does not exist").setEphemeral(true).queue();
@@ -55,7 +55,7 @@ public class ModalSubmitEvent extends ListenerAdapter {
                 p_modalInteractionEvent.getJDA().getGuildById("1141049396453187690").createTextChannel(member.getUser().getName()).setParent(p_modalInteractionEvent.getJDA().getCategoryById(commissionData)).queue(textChannel -> {
                     textChannel.sendMessage(getCommissionEmbed(member.getUser().getName(), p_modalInteractionEvent.getValue("description").getAsString(), p_modalInteractionEvent.getValue("quote").getAsString())).queue();
                     commission.setChannelId(textChannel.getIdLong());
-                    m_commissionRepository.save(commission);
+                    m_commissionRepository.insert(commission);
                 });
 
                 // Remove selected category
