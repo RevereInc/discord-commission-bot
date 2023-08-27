@@ -27,27 +27,21 @@ public class Review {
 
     // Unique identifier for the review
     @Id
-    @Field(name = "id")
-    private String m_id;
+    private String id;
 
     // The ID of the reviewer
-    @Field(name = "reviewer")
-    private long m_reviewerId;
+    private long reviewerId;
 
     // The rating given in the review
-    @Field(name = "rating")
-    private float m_rating;
+    private float rating;
 
     // The title of the review
-    @Field(name = "title")
-    private String m_title;
+    private String title;
 
     // The content of the review
-    @Field(name = "review")
-    private String m_review;
+    private String review;
 
     // Reference to the associated Freelancer
     @DBRef
-    @Field(name = "freelancer")
-    private Freelancer m_freelancer;
+    private Freelancer freelancer;
 }

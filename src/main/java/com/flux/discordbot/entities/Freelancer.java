@@ -24,26 +24,20 @@ import java.util.List;
 public class Freelancer {
     // Unique identifier for the Freelancer
     @Id
-    @Field(name = "id")
-    private String m_id;
+    private String id;
 
     // User ID associated with this Freelancer
-    @Field(name = "user_id")
-    private long m_userId;
+    private long userId;
 
     // Name of the Freelancer
-    @Field(name = "name")
-    private String m_name;
+    private String name;
 
     // List of service role IDs associated with the Freelancer
-    @Field(name = "services")
-    private List<Long> m_serviceRoleIds;
+    private List<Long> serviceRoleIds;
 
     // Biography or description of the Freelancer
-    @Field(name = "bio")
-    private String m_bio;
+    private String bio;
 
     // List of title descriptions associated with the Freelancer
-    @Field(name = "title_descriptions")
-    private List<TitleDescription> m_titleDescriptions;
+    private List<TitleDescription> titleDescriptions;
 }

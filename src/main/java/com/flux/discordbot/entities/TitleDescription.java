@@ -20,8 +20,8 @@ import lombok.Setter;
 public class TitleDescription {
 
     // The title associated with this description
-    private String m_title;
+    private String title;
 
     // The description or details related to the title
-    private String m_description;
+    private String description;
 }
