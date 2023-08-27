@@ -22,6 +22,11 @@ import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * @author Flux
+ * @project Commission-Discord-Bot-SpringBoot
+ * @date 8/27/2023
+ */
 @AllArgsConstructor
 @Service
 public class StringSelectionInteractionListener extends ListenerAdapter {

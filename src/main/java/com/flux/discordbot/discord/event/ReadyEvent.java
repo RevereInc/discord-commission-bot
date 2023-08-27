@@ -4,6 +4,11 @@ import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.springframework.stereotype.Service;
 
+/**
+ * @author Flux
+ * @project Commission-Discord-Bot-SpringBoot
+ * @date 8/27/2023
+ */
 @Service
 @Slf4j
 public class ReadyEvent extends ListenerAdapter {

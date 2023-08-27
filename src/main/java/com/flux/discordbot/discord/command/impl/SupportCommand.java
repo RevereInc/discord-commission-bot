@@ -11,6 +11,11 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 
+/**
+ * @author Flux
+ * @project Commission-Discord-Bot-SpringBoot
+ * @date 8/27/2023
+ */
 @Service
 public class SupportCommand extends SlashCommand {
 
@@ -24,10 +29,16 @@ public class SupportCommand extends SlashCommand {
     }
 
     @Override
-    protected void execute(SlashCommandEvent slashCommandEvent) {
-        slashCommandEvent.getChannel().sendMessage(getSupportEmbed()).queue();
+    protected void execute(SlashCommandEvent p_slashCommandEvent) {
+        // Send the support embed message
+        p_slashCommandEvent.getChannel().sendMessage(getSupportEmbed()).queue();
     }
 
+    /**
+     * Create and configure the support embed message.
+     *
+     * @return MessageCreateData containing the support embed.
+     */
     public MessageCreateData getSupportEmbed() {
         return new FluxEmbedBuilder()
             .setTitle("Support | Flux Solutions")

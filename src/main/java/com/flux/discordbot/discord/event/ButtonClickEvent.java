@@ -23,11 +23,17 @@ import java.util.*;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * @author Flux
+ * @project Commission-Discord-Bot-SpringBoot
+ * @date 8/27/2023
+ */
 @Service
 @AllArgsConstructor
 public class ButtonClickEvent extends ListenerAdapter {
     private final CommissionRepository m_commissionRepository;
 
+    // Maps for tracking deletion tasks and accepted commissions
     private final Map<Long, ScheduledFuture<?>> deletionTasks = new HashMap<>();
     private final Map<Long, List<Long>> acceptedCommissions = new HashMap<>();
 
@@ -38,6 +44,7 @@ public class ButtonClickEvent extends ListenerAdapter {
 
         switch (button) {
             case "create-commission" -> {
+                // Handle the "create-commission" button click
                 StringSelectMenu selectionMenu = StringSelectMenu.create("commission-menu").setPlaceholder("Chose the valid category for your commission")
                         .addOption("Plugin Developer", "1141050234353496088")
                         .addOption("Client Developer", "1141050256675577916")
@@ -46,6 +53,7 @@ public class ButtonClickEvent extends ListenerAdapter {
                 p_buttonInteractionEvent.replyEmbeds(selectCategoryEmbed().getEmbeds()).addActionRow(selectionMenu).setEphemeral(true).queue();
             }
             case "delete-commission" -> {
+                // Handle the "delete-commission" button click
                 Message message = p_buttonInteractionEvent.getChannel().sendMessage(deleteCommissionEmbed()).complete();
 
                 ScheduledFuture<?> deletionTask = Objects.requireNonNull(Objects.requireNonNull(p_buttonInteractionEvent.getGuild()).getTextChannelById(message.getChannel().getId())).delete().queueAfter(10, TimeUnit.SECONDS);
@@ -53,6 +61,7 @@ public class ButtonClickEvent extends ListenerAdapter {
 
             }
             case "cancel-commission-deletion" -> {
+                // Handle the "cancel-commission-deletion" button click
                 p_buttonInteractionEvent.getChannel().sendMessage(cancelledCommissionDeletion()).queue();
                 p_buttonInteractionEvent.getChannel().deleteMessageById(p_buttonInteractionEvent.getMessageId()).queue();
 
@@ -64,6 +73,7 @@ public class ButtonClickEvent extends ListenerAdapter {
 
             // ALL FREELANCERS
             case "accept-commission" -> {
+                // Handle the "accept-commission" button click
                 assert member != null;
 
                 long commissionMessageId = p_buttonInteractionEvent.getMessageIdLong();
@@ -83,6 +93,7 @@ public class ButtonClickEvent extends ListenerAdapter {
 
             // ADMINISTRATOR ACTIONS
             case "approve-commission" -> {
+                // Handle the "approve-commission" button click
                 List<SelectOption> options = new ArrayList<>();
 
                 for (Map.Entry<Long, List<Long>> entry : acceptedCommissions.entrySet()) {
@@ -101,12 +112,15 @@ public class ButtonClickEvent extends ListenerAdapter {
             }
 
             case "disapprove-commission" -> {
+                // Handle the "disapprove-commission" button click
                 p_buttonInteractionEvent.reply(disapproveEmbed()).queue();
             }
         }
     }
 
+    // Methods to create embed messages
     public MessageCreateData selectCategoryEmbed() {
+        // Create and configure the select category embed
         return new FluxEmbedBuilder()
                 .setTitle("Commission | Flux Solutions")
                 .setDescription("Select the category for your commission")
@@ -117,6 +131,7 @@ public class ButtonClickEvent extends ListenerAdapter {
     }
 
     public MessageCreateData deleteCommissionEmbed() {
+        // Create and configure the delete commission embed
         return new FluxEmbedBuilder()
                 .setTitle("Commission | Flux Solutions")
                 .setDescription("Deleting commission in 10 seconds...")
@@ -127,6 +142,7 @@ public class ButtonClickEvent extends ListenerAdapter {
     }
 
     public MessageCreateData disapproveEmbed() {
+        // Create and configure the disapprove embed
         return new FluxEmbedBuilder()
                 .setTitle("Commission | Flux Solutions")
                 .setDescription("An administrator has disapproved this commission.")
@@ -136,6 +152,7 @@ public class ButtonClickEvent extends ListenerAdapter {
     }
 
     public MessageCreateData choseToApprove() {
+        // Create and configure the approve commission embed
         return new FluxEmbedBuilder()
                 .setTitle("Commission | Flux Solutions")
                 .setDescription("Select the freelancer to approve")
@@ -145,6 +162,7 @@ public class ButtonClickEvent extends ListenerAdapter {
     }
 
     public MessageCreateData acceptedCommissionEmbed(final Member p_member) {
+        // Create and configure the accepted commission embed
         return new FluxEmbedBuilder()
                 .setTitle("Commission | Flux Solutions")
                 .setDescription(p_member.getUser().getName() + " has accepted this commission. Waiting for an administrator to approve.")
@@ -156,6 +174,7 @@ public class ButtonClickEvent extends ListenerAdapter {
     }
 
     public MessageCreateData cancelledCommissionDeletion() {
+        // Create and configure the cancelled commission embed
         return new FluxEmbedBuilder()
                 .setTitle("Commission | Flux Solutions")
                 .setDescription("Cancelled the deletion of commission")

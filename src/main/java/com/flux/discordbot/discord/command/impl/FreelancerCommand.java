@@ -15,6 +15,11 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * @author Flux
+ * @project Commission-Discord-Bot-SpringBoot
+ * @date 8/27/2023
+ */
 @Service
 public class FreelancerCommand extends SlashCommand {
     private final FreelancerRepository m_freelancerRepository;
@@ -30,6 +35,7 @@ public class FreelancerCommand extends SlashCommand {
         this.userPermissions = new Permission[] { Permission.ADMINISTRATOR };
         this.userMissingPermMessage = "You are missing the `ADMINISTRATOR` permission required to execute this command.";
 
+        // Define command options
         final List<OptionData> optionData = new ArrayList<>();
         optionData.add(new OptionData(OptionType.USER, "userid", "userid of the freelancer").setRequired(true));
         optionData.add(new OptionData(OptionType.STRING, "name", "name of the freelancer").setRequired(true));
@@ -41,19 +47,23 @@ public class FreelancerCommand extends SlashCommand {
 
     @Override
     protected void execute(final SlashCommandEvent p_slashCommandEvent) {
+        // Retrieve command options
         final User userId = p_slashCommandEvent.getOption("userid").getAsUser();
         final String name = p_slashCommandEvent.getOption("name").getAsString();
         final Role services = p_slashCommandEvent.getOption("services").getAsRole();
         final String bio = p_slashCommandEvent.getOption("bio").getAsString();
 
+        // Create a new Freelancer entity
         final Freelancer freelancer = new Freelancer();
         freelancer.setName(name);
         freelancer.setUserId(userId.getIdLong());
         freelancer.setBio(bio);
         freelancer.setServiceRoleIds(List.of(Long.valueOf(services.getId())));
 
+        // Save the Freelancer entity to the repository
         m_freelancerRepository.save(freelancer);
 
+        // Send a response message
         p_slashCommandEvent.reply("Created freelancer " + name).setEphemeral(false).queue();
     }
 }

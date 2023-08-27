@@ -10,6 +10,11 @@ import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.entities.Activity;
 import org.springframework.stereotype.Service;
 
+/**
+ * @author Flux
+ * @project Commission-Discord-Bot-SpringBoot
+ * @date 8/27/2023
+ */
 @AllArgsConstructor
 @Service
 @Slf4j
@@ -17,7 +22,11 @@ public class CommandHandler {
     private final SupportCommand m_supportCommand;
     private final FreelancerCommand m_freelancerCommand;
 
-
+    /**
+     * Get the configured CommandClient for the bot.
+     *
+     * @return Configured CommandClient instance.
+     */
     public CommandClient getCommandClient() {
         return new CommandClientBuilder()
                 .setOwnerId(1034531618951528488L)

@@ -13,6 +13,11 @@ import java.awt.*;
 import java.time.temporal.TemporalAccessor;
 import java.util.ArrayList;
 
+/**
+ * @author Flux
+ * @project Commission-Discord-Bot-SpringBoot
+ * @date 8/27/2023
+ */
 public class FluxEmbedBuilder {
     private final MessageCreateBuilder m_messageCreateBuilder;
     private final EmbedBuilder m_embedBuilder;

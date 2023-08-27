@@ -5,6 +5,11 @@ import net.dv8tion.jda.api.entities.Member;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * @author Flux
+ * @project Commission-Discord-Bot-SpringBoot
+ * @date 8/27/2023
+ */
 public final class CommissionData {
     private static final Map<Member, String> selectedUserCategory = new HashMap<>();
 
