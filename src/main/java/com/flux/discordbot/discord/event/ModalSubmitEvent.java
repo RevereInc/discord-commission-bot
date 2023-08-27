@@ -55,7 +55,7 @@ public class ModalSubmitEvent extends ListenerAdapter {
                 p_modalInteractionEvent.getJDA().getGuildById("1141049396453187690").createTextChannel(member.getUser().getName()).setParent(p_modalInteractionEvent.getJDA().getCategoryById(commissionData)).queue(textChannel -> {
                     textChannel.sendMessage(getCommissionEmbed(member.getUser().getName(), p_modalInteractionEvent.getValue("description").getAsString(), p_modalInteractionEvent.getValue("quote").getAsString())).queue();
                     commission.setChannelId(textChannel.getIdLong());
-                    m_commissionRepository.insert(commission);
+                    m_commissionRepository.save(commission);
                 });
 
                 // Remove selected category
