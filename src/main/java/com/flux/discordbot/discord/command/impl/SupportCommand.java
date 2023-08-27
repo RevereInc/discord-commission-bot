@@ -7,9 +7,11 @@ import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
+import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 
+@Service
 public class SupportCommand extends SlashCommand {
 
     public SupportCommand() {
