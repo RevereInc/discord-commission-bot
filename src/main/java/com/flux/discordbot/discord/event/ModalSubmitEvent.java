@@ -66,7 +66,7 @@ public class ModalSubmitEvent extends ListenerAdapter {
         }
     }
 
-    public MessageCreateData getCommissionEmbed(String p_user, String p_description, String p_value) {
+    public MessageCreateData getCommissionEmbed(final String p_user, final String p_description, final String p_value) {
         return new FluxEmbedBuilder()
                 .setTitle("New commission from " + p_user + " | Flux Solutions")
                 .setDescription(p_description)
