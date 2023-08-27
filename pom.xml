@@ -11,8 +11,8 @@
 	<groupId>com.flux</groupId>
 	<artifactId>discord-bot</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>Comission Discord Bot</name>
-	<description>Discord bot for flux comissions</description>
+	<name>Commission Discord Bot</name>
+	<description>Discord bot for flux commissions</description>
 	<properties>
 		<java.version>17</java.version>
 	</properties>
