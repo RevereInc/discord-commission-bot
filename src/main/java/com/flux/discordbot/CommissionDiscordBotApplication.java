@@ -4,10 +4,10 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class ComissionDiscordBotApplication {
+public class CommissionDiscordBotApplication {
 
 	public static void main(final String[] args) {
-		SpringApplication.run(ComissionDiscordBotApplication.class, args);
+		SpringApplication.run(CommissionDiscordBotApplication.class, args);
 	}
 
 }
