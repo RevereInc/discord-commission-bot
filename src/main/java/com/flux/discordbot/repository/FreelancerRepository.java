@@ -2,6 +2,7 @@ package com.flux.discordbot.repository;
 
 import com.flux.discordbot.entities.Freelancer;
 import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.mongodb.repository.Query;
 
 /**
  * Repository interface for managing Freelancer entities in MongoDB.
@@ -19,5 +20,7 @@ public interface FreelancerRepository extends MongoRepository<Freelancer, String
      * @param userId The ID of the user associated with the freelancer.
      * @return The Freelancer object associated with the given user ID.
      */
+    @Query("{'user_id': ?0}")
     Freelancer findFreelancerByUserId(long userId);
+
 }

@@ -14,6 +14,6 @@ import org.springframework.stereotype.Service;
 public class ReadyEvent extends ListenerAdapter {
     @Override
     public void onReady(final net.dv8tion.jda.api.events.session.ReadyEvent event) {
-        log.info("Successfully connected to " + event.getJDA().getSelfUser().getName());
+        log.info("Successfully logged into " + event.getJDA().getSelfUser().getName());
     }
 }

@@ -1,5 +1,6 @@
 package com.flux.discordbot.discord.command.impl;
 
+import com.flux.discordbot.discord.utility.FluxEmbedBuilder;
 import com.flux.discordbot.entities.Freelancer;
 import com.flux.discordbot.repository.FreelancerRepository;
 import com.jagrosh.jdautilities.command.SlashCommand;
@@ -7,11 +8,15 @@ import com.jagrosh.jdautilities.command.SlashCommandEvent;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
+import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle;
+import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -53,17 +58,51 @@ public class FreelancerCommand extends SlashCommand {
         final Role services = p_slashCommandEvent.getOption("services").getAsRole();
         final String bio = p_slashCommandEvent.getOption("bio").getAsString();
 
-        // Create a new Freelancer entity
-        final Freelancer freelancer = new Freelancer();
-        freelancer.setName(name);
-        freelancer.setUserId(userId.getIdLong());
-        freelancer.setBio(bio);
-        freelancer.setServiceRoleIds(List.of(Long.valueOf(services.getId())));
+        Freelancer existingFreelancer = m_freelancerRepository.findFreelancerByUserId(userId.getIdLong());
 
-        // Save the Freelancer entity to the repository
-        m_freelancerRepository.save(freelancer);
+        if (existingFreelancer != null) {
+            p_slashCommandEvent.reply(alreadyExists(name)).setEphemeral(false).queue();
+        } else {
+            // Create a new Freelancer entity
+            final Freelancer freelancer = new Freelancer();
+            freelancer.setName(name);
+            freelancer.setUserId(userId.getIdLong());
+            freelancer.setBio(bio);
+            freelancer.setServiceRoleIds(List.of(Long.valueOf(services.getId())));
 
-        // Send a response message
-        p_slashCommandEvent.reply("Created freelancer " + name).setEphemeral(false).queue();
+            // Save the Freelancer entity to the repository
+            m_freelancerRepository.save(freelancer);
+
+            // Send a response message
+            p_slashCommandEvent.reply(createdFreelancer(name)).setEphemeral(false).queue();
+        }
+    }
+
+    /**
+     * Create and configure the created freelancer message.
+     *
+     * @return MessageCreateData containing the support embed.
+     */
+    public MessageCreateData createdFreelancer(String name) {
+        return new FluxEmbedBuilder()
+                .setTitle("Freelancer | Flux Solutions")
+                .setDescription("Successfully created freelancer, ``" + name + "``.")
+                .setTimeStamp(Instant.now())
+                .setColor(-1)
+                .build();
+    }
+
+    /**
+     * Create and configure the created freelancer message.
+     *
+     * @return MessageCreateData containing the support embed.
+     */
+    public MessageCreateData alreadyExists(String name) {
+        return new FluxEmbedBuilder()
+                .setTitle("Freelancer | Flux Solutions")
+                .setDescription("A freelancer with the name of, ``" + name + "`` already exists.")
+                .setTimeStamp(Instant.now())
+                .setColor(-1)
+                .build();
     }
 }
