@@ -45,8 +45,8 @@ public class JDAInitializer implements CommandLineRunner {
 
         // Enable required intents
         builder.enableIntents(
-                GatewayIntent.MESSAGE_CONTENT, GatewayIntent.GUILD_MESSAGES,
-                GatewayIntent.GUILD_MEMBERS, GatewayIntent.DIRECT_MESSAGES, GatewayIntent.GUILD_PRESENCES
+            GatewayIntent.MESSAGE_CONTENT, GatewayIntent.GUILD_MESSAGES,
+            GatewayIntent.GUILD_MEMBERS, GatewayIntent.DIRECT_MESSAGES, GatewayIntent.GUILD_PRESENCES
         );
 
         builder.setMemberCachePolicy(MemberCachePolicy.ALL);

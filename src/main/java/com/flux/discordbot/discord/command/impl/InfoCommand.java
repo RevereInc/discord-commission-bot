@@ -1,5 +1,6 @@
 package com.flux.discordbot.discord.command.impl;
 
+import com.flux.discordbot.discord.utility.FluxEmbedBuilder;
 import com.flux.discordbot.entities.Freelancer;
 import com.flux.discordbot.entities.TitleDescription;
 import com.flux.discordbot.repository.FreelancerRepository;
@@ -12,9 +13,11 @@ import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
+import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import java.util.StringJoiner;
@@ -37,7 +40,6 @@ public class InfoCommand extends SlashCommand {
         this.userMissingPermMessage = "You are missing the `ADMINISTRATOR` permission required to execute this command.";
 
         // Define command options
-
         this.options = Collections.singletonList(new OptionData(OptionType.USER, "user", "userid of the freelancer").setRequired(true));
     }
 
@@ -73,12 +75,26 @@ public class InfoCommand extends SlashCommand {
 
         final List<TitleDescription> titleDescriptionCards = freelancer.getTitleDescriptions();
 
-        p_slashCommandEvent.reply(
+        p_slashCommandEvent.reply(informationEmbed(name, rating, serviceRolesPretty, bio)).queue();
+
+        /*p_slashCommandEvent.reply(
                 "**NAME** " + name + "\n"
                 + "**AVG RATING** " + rating + "\n"
                 + "**SERVICES** " + serviceRolesPretty + "\n"
                 + "** BIO ** " + bio + "\n"
                 + "**CARDS** i need an embed to display these, too lazy"
-        ).queue();
+        ).queue();*/
+    }
+
+    public MessageCreateData informationEmbed(String p_member, float p_rating, String p_serviceRolesPretty, String p_bio) {
+        return new FluxEmbedBuilder()
+                .setTitle("Freelancer Profile | Flux Solutions")
+                .setDescription("View **" + p_member + "'s** freelancer statistics")
+                .addField("Services", p_serviceRolesPretty, false)
+                .addField("Rating", String.valueOf(p_rating), false)
+                .addField("Bio", p_bio, false)
+                .setTimeStamp(Instant.now())
+                .setColor(-1)
+                .build();
     }
 }
