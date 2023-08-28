@@ -43,10 +43,11 @@ public class InfoCommand extends SlashCommand {
 
     @Override
     protected void execute(final SlashCommandEvent p_slashCommandEvent) {
-        final User userId = p_slashCommandEvent.getOption("userid").getAsUser();
+        final User userId = p_slashCommandEvent.getOption("user").getAsUser();
 
         if (!m_freelancerRepository.existsFreelancerByUserId(userId.getIdLong())) {
             p_slashCommandEvent.reply("Could not find freelancer with name " + userId.getName()).queue();
+            return;
         }
 
         final Freelancer freelancer = m_freelancerRepository.findFreelancerByUserId(userId.getIdLong());
