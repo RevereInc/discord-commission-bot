@@ -1,5 +1,6 @@
 package com.flux.discordbot.discord.command;
 
+import com.flux.discordbot.discord.command.impl.AddServiceCommand;
 import com.flux.discordbot.discord.command.impl.FreelancerCommand;
 import com.flux.discordbot.discord.command.impl.InfoCommand;
 import com.flux.discordbot.discord.command.impl.SupportCommand;
@@ -23,6 +24,7 @@ public class CommandHandler {
     private final SupportCommand m_supportCommand;
     private final FreelancerCommand m_freelancerCommand;
     private final InfoCommand m_infoCommand;
+    private final AddServiceCommand m_addServiceCommand;
 
     /**
      * Get the configured CommandClient for the bot.
@@ -35,7 +37,7 @@ public class CommandHandler {
                 .setCoOwnerIds(811580599068262421L)
                 .setStatus(OnlineStatus.DO_NOT_DISTURB)
                 .setActivity(Activity.watching("x customers"))
-                .addSlashCommands(m_supportCommand, m_freelancerCommand, m_infoCommand)
+                .addSlashCommands(m_supportCommand, m_freelancerCommand, m_infoCommand, m_addServiceCommand)
                 .build();
     }
 }
