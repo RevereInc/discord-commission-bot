@@ -87,7 +87,7 @@ public class CardCommand extends SlashCommand {
             this.help = "Remove a card from your displayed cards";
 
             this.options = Collections.singletonList(
-                    new OptionData(OptionType.NUMBER, "index", "Index of the card (1-3)").setRequired(true)
+                    new OptionData(OptionType.INTEGER, "index", "Index of the card (1-3)").setRequired(true)
             );
         }
 
@@ -109,7 +109,7 @@ public class CardCommand extends SlashCommand {
             if (titleDescription == null) {
                 p_slashCommandEvent.reply("Unable to find card at index `" + index + "`").setEphemeral(true).queue();
             } else {
-                p_slashCommandEvent.reply("Successfully deleted card " + titleDescription.getTitle()).setEphemeral(true).queue();
+                p_slashCommandEvent.reply("Successfully deleted card `" + titleDescription.getTitle() + "`").setEphemeral(true).queue();
             }
         }
     }
