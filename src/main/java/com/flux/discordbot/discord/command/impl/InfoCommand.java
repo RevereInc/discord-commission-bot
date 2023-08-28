@@ -75,7 +75,7 @@ public class InfoCommand extends SlashCommand {
 
         final List<TitleDescription> titleDescriptionCards = freelancer.getTitleDescriptions();
 
-        p_slashCommandEvent.reply(informationEmbed(name, rating, serviceRolesPretty, bio)).queue();
+        p_slashCommandEvent.reply(informationEmbed(name, rating, serviceRolesPretty, bio, titleDescriptionCards)).queue();
 
         /*p_slashCommandEvent.reply(
                 "**NAME** " + name + "\n"
@@ -86,15 +86,26 @@ public class InfoCommand extends SlashCommand {
         ).queue();*/
     }
 
-    public MessageCreateData informationEmbed(String p_member, float p_rating, String p_serviceRolesPretty, String p_bio) {
-        return new FluxEmbedBuilder()
+    public MessageCreateData informationEmbed(final String p_member, final float p_rating, final String p_serviceRolesPretty,
+                                              final String p_bio, final List<TitleDescription> p_titleDescriptions) {
+        FluxEmbedBuilder fluxEmbedBuilder =  new FluxEmbedBuilder()
                 .setTitle("Freelancer Profile | Flux Solutions")
                 .setDescription("View **" + p_member + "'s** freelancer statistics")
                 .addField("Services", p_serviceRolesPretty, false)
                 .addField("Rating", String.valueOf(p_rating), false)
                 .addField("Bio", p_bio, false)
                 .setTimeStamp(Instant.now())
-                .setColor(-1)
-                .build();
+                .setColor(-1);
+
+        if (p_titleDescriptions != null && p_titleDescriptions.size() > 0) {
+            for (final TitleDescription titleDescription : p_titleDescriptions) {
+                fluxEmbedBuilder = fluxEmbedBuilder.addField(
+                        titleDescription.getTitle(),
+                        titleDescription.getDescription(),
+                        true);
+            }
+        }
+
+        return fluxEmbedBuilder.build();
     }
 }
