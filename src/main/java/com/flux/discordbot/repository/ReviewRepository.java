@@ -1,5 +1,6 @@
 package com.flux.discordbot.repository;
 
+import com.flux.discordbot.entities.Freelancer;
 import com.flux.discordbot.entities.Review;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
@@ -25,8 +26,8 @@ public interface ReviewRepository extends MongoRepository<Review, String> {
     /**
      * Find all Reviews by a freelancer's user id.
      *
-     * @param userId the user id of the freelancer.
+     * @param freelancer the freelancer.
      * @return All the reviews associated with said freelancer.
      */
-    List<Review> findAllByFreelancer_UserId(long userId);
+    List<Review> findAllByFreelancer(Freelancer freelancer);
 }
