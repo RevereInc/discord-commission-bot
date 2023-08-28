@@ -4,6 +4,8 @@ import com.flux.discordbot.discord.utility.FluxEmbedBuilder;
 import com.flux.discordbot.entities.Commission;
 import com.flux.discordbot.repository.CommissionRepository;
 import lombok.AllArgsConstructor;
+import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.entities.IPermissionHolder;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
@@ -105,6 +107,11 @@ public class ButtonClickEvent extends ListenerAdapter {
                     }
                 }
 
+                if (options.isEmpty()) {
+                    p_buttonInteractionEvent.reply("No one has accepted this commission").queue();
+                    return;
+                }
+
                 StringSelectMenu selectionMenu = StringSelectMenu.create("approve-freelancer").setPlaceholder("Choose a freelancer to approve").addOptions(options).build();
 
                 p_buttonInteractionEvent.reply(choseToApprove()).addActionRow(selectionMenu).setEphemeral(true).queue();
@@ -113,6 +120,80 @@ public class ButtonClickEvent extends ListenerAdapter {
             case "disapprove-commission" -> {
                 // Handle the "disapprove-commission" button click
                 p_buttonInteractionEvent.reply(disapproveEmbed()).queue();
+            }
+
+            case "deny-commission" -> {
+                p_buttonInteractionEvent.getChannel().sendMessage(declinedCommissionEmbed(p_buttonInteractionEvent.getUser().getName())).queue();
+                p_buttonInteractionEvent.getGuild().getTextChannelById(p_buttonInteractionEvent.getChannel().getId()).upsertPermissionOverride(p_buttonInteractionEvent.getMember()).setDenied(Permission.VIEW_CHANNEL).queue();
+            }
+
+            case "request-payment" -> {
+                final long channelId = Long.parseLong(p_buttonInteractionEvent.getMessage().getChannel().getId());
+                final Commission commission = m_commissionRepository.findCommissionByPublicChannelId(channelId);
+
+                String interactionUser = p_buttonInteractionEvent.getUser().getId();
+
+                if(!interactionUser.equals(String.valueOf(commission.getApprovedFreelancerId()))) {
+                    p_buttonInteractionEvent.reply(restrictedAccessEmbed()).queue();
+                    return;
+                }
+
+                p_buttonInteractionEvent.reply(customMessageEmbed("Please send **$" + commission.getQuote() + "** to https://paypal.me/devuxious")).queue();
+            }
+
+            case "cancel-ongoing-commission" -> {
+                final long channelId = Long.parseLong(p_buttonInteractionEvent.getMessage().getChannel().getId());
+                final Commission commission = m_commissionRepository.findCommissionByPublicChannelId(channelId);
+
+                String interactionUser = p_buttonInteractionEvent.getUser().getId();
+
+                if(!interactionUser.equals(String.valueOf(commission.getApprovedFreelancerId()))) {
+                    p_buttonInteractionEvent.reply(restrictedAccessEmbed()).queue();
+                    return;
+                }
+
+                commission.setFinished(true);
+                m_commissionRepository.save(commission);
+
+                p_buttonInteractionEvent.reply(customMessageEmbed("Cancelling commission, channel will be deleted after 10 seconds.")).queue();
+                p_buttonInteractionEvent.getChannel().delete().queueAfter(10, TimeUnit.SECONDS);
+            }
+
+            case "payment-finished" -> {
+                final long channelId = Long.parseLong(p_buttonInteractionEvent.getMessage().getChannel().getId());
+                final Commission commission = m_commissionRepository.findCommissionByPublicChannelId(channelId);
+
+                String interactionUser = p_buttonInteractionEvent.getUser().getId();
+
+                if(!interactionUser.equals(String.valueOf(commission.getApprovedFreelancerId()))) {
+                    p_buttonInteractionEvent.reply(restrictedAccessEmbed()).queue();
+                    return;
+                }
+
+                commission.setPaymentPending(false);
+                m_commissionRepository.save(commission);
+
+                p_buttonInteractionEvent.reply(customMessageEmbed("Payment has been marked at received.")).queue();
+            }
+
+            case "finish-commission" -> {
+                final long channelId = Long.parseLong(p_buttonInteractionEvent.getMessage().getChannel().getId());
+                final Commission commission = m_commissionRepository.findCommissionByPublicChannelId(channelId);
+
+                String interactionUser = p_buttonInteractionEvent.getUser().getId();
+
+                if(!interactionUser.equals(String.valueOf(commission.getApprovedFreelancerId()))) {
+                    p_buttonInteractionEvent.reply(restrictedAccessEmbed()).queue();
+                    return;
+                }
+
+                if(commission.isPaymentPending()) {
+                    p_buttonInteractionEvent.reply(customMessageEmbed("Waiting for payment before finishing commission")).queue();
+                } else {
+                    commission.setFinished(true);
+                    m_commissionRepository.save(commission);
+                    p_buttonInteractionEvent.reply(customMessageEmbed("Commission has been marked as finished")).queue();
+                }
             }
         }
     }
@@ -129,6 +210,24 @@ public class ButtonClickEvent extends ListenerAdapter {
                 .build();
     }
 
+    public MessageCreateData restrictedAccessEmbed() {
+        return new FluxEmbedBuilder()
+                .setTitle("Commission | Flux Solutions")
+                .setDescription("Access is restricted to the freelancer")
+                .setTimeStamp(Instant.now())
+                .setColor(-1)
+                .build();
+    }
+
+    public MessageCreateData declinedCommissionEmbed(String name) {
+        return new FluxEmbedBuilder()
+                .setTitle("Commission | Flux Solutions")
+                .setDescription(name + " has declined this commission")
+                .setTimeStamp(Instant.now())
+                .setColor(-1)
+                .build();
+    }
+
     public MessageCreateData deleteCommissionEmbed() {
         // Create and configure the delete commission embed
         return new FluxEmbedBuilder()
@@ -137,6 +236,16 @@ public class ButtonClickEvent extends ListenerAdapter {
                 .setTimeStamp(Instant.now())
                 .setColor(-1)
                 .addButton(ButtonStyle.DANGER, "cancel-commission-deletion", "Cancel Deletion", Emoji.fromUnicode("U+1F3AB"))
+                .build();
+    }
+
+    public MessageCreateData customMessageEmbed(String message) {
+        // Create and configure the delete commission embed
+        return new FluxEmbedBuilder()
+                .setTitle("Commission | Flux Solutions")
+                .setDescription(message)
+                .setTimeStamp(Instant.now())
+                .setColor(-1)
                 .build();
     }
 

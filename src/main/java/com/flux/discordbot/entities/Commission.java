@@ -44,6 +44,15 @@ public class Commission {
     // The channel ID where the commission was requested
     private long channelId;
 
+    // The channel ID where the commission is being handled
+    private long publicChannelId;
+
+    // Mark the commission as finished
+    private boolean finished;
+
+    // Check if the payment is still pending
+    private boolean paymentPending;
+
     @Override
     public String toString() {
         return "Commission{" +

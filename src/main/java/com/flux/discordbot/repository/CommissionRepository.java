@@ -22,6 +22,15 @@ public interface CommissionRepository extends MongoRepository<Commission, String
      */
     Commission findCommissionByChannelId(long channelId);
 
+
+    /**
+     * Find a commission by the public channel ID.
+     *
+     * @param publicChannelId The ID of the channel associated with the public commission.
+     * @return The Commission object associated with the given channel ID:
+     */
+    Commission findCommissionByPublicChannelId(long publicChannelId);
+
     /**
      * Find a commission by the user ID.
      *

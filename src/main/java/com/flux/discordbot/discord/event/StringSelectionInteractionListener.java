@@ -8,9 +8,11 @@ import lombok.AllArgsConstructor;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.channel.concrete.Category;
+import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.interaction.component.StringSelectInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.components.ActionRow;
+import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle;
 import net.dv8tion.jda.api.interactions.components.text.TextInput;
 import net.dv8tion.jda.api.interactions.components.text.TextInputStyle;
 import net.dv8tion.jda.api.interactions.modals.Modal;
@@ -64,7 +66,6 @@ public class StringSelectionInteractionListener extends ListenerAdapter {
 
                 final long interactionChannelId = p_stringSelectInteractionEvent.getChannel().getIdLong();
 
-                System.out.println(interactionChannelId);
                 final Commission commission = m_commissionRepository.findCommissionByChannelId(interactionChannelId);
                 commission.setApprovedFreelancerId(Long.parseLong(selectedFreelancer));
 
@@ -87,12 +88,15 @@ public class StringSelectionInteractionListener extends ListenerAdapter {
                 p_stringSelectInteractionEvent.getGuild().getTextChannelById(p_stringSelectInteractionEvent.getChannel().getId()).getManager().setParent(targetCategory).queue();
 
                 p_stringSelectInteractionEvent.getJDA().getGuildById("1139719606186020904").createTextChannel("commission-" + commissionId)
-                    .setParent(p_stringSelectInteractionEvent.getJDA().getCategoryById("1141428418328657930"))
-                    .addMemberPermissionOverride(commission.getUserId(), List.of(Permission.VIEW_CHANNEL), Collections.emptyList())
-                    .addMemberPermissionOverride(commission.getApprovedFreelancerId(), List.of(Permission.VIEW_CHANNEL), Collections.emptyList())
-                    .queue(textChannel -> {
-                        textChannel.sendMessage(commissionEmbed(freelancerMember.getUser().getName(), commissionQuote, commissionDescription)).queue();
-                });
+                        .setParent(p_stringSelectInteractionEvent.getJDA().getCategoryById("1141428418328657930"))
+                        .addMemberPermissionOverride(commission.getUserId(), List.of(Permission.VIEW_CHANNEL), Collections.emptyList())
+                        .addMemberPermissionOverride(commission.getApprovedFreelancerId(), List.of(Permission.VIEW_CHANNEL), Collections.emptyList())
+                        .queue(textChannel -> {
+                            textChannel.sendMessage(commissionEmbed(freelancerMember.getUser().getName(), commissionQuote, commissionDescription)).queue();
+                            commission.setPublicChannelId(textChannel.getIdLong());
+                            m_commissionRepository.save(commission);
+                            textChannel.upsertPermissionOverride(p_stringSelectInteractionEvent.getJDA().getGuildById("1139719606186020904").getPublicRole()).setDenied(Permission.VIEW_CHANNEL).queue();
+                        });
 
                 p_stringSelectInteractionEvent.getChannel().sendMessage(approveEmbed(freelancerMember.getUser().getName())).queue();
             }
@@ -105,6 +109,10 @@ public class StringSelectionInteractionListener extends ListenerAdapter {
                 .setDescription(p_description)
                 .addField("Freelancer", p_member, false)
                 .addField("Quote", p_quote, false)
+                .addButton(ButtonStyle.SUCCESS, "finish-commission", "Mark As Finished", Emoji.fromUnicode("U+1F3AB"))
+                .addButton(ButtonStyle.PRIMARY, "payment-finished", "Mark Payment As Received", Emoji.fromUnicode("U+1F3AB"))
+                .addButton(ButtonStyle.SECONDARY, "request-payment", "Request Payment", Emoji.fromUnicode("U+1F3AB"))
+                .addButton(ButtonStyle.DANGER, "cancel-ongoing-commission", "Cancel Commission", Emoji.fromUnicode("U+1F3AB"))
                 .setTimeStamp(Instant.now())
                 .setColor(-1)
                 .build();

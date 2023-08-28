@@ -50,7 +50,8 @@ public class ModalSubmitEvent extends ListenerAdapter {
                 commission.setCategory(commissionData);
                 commission.setDescription(p_modalInteractionEvent.getValue("description").getAsString());
                 commission.setQuote(p_modalInteractionEvent.getValue("quote").getAsString());
-
+                commission.setPaymentPending(true);
+                commission.setFinished(false);
 
                 p_modalInteractionEvent.getJDA().getGuildById("1141049396453187690").createTextChannel(member.getUser().getName()).setParent(p_modalInteractionEvent.getJDA().getCategoryById(commissionData)).queue(textChannel -> {
                     textChannel.sendMessage(getCommissionEmbed(member.getUser().getName(), p_modalInteractionEvent.getValue("description").getAsString(), p_modalInteractionEvent.getValue("quote").getAsString())).queue();
