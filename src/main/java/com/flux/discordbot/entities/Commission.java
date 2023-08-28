@@ -5,6 +5,8 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
+import java.io.Serializable;
+
 /**
  * Represents a commission entity stored in a MongoDB collection.
  * This class defines the structure of a commission, including category, quote, description, freelancer, and other details.
@@ -19,7 +21,7 @@ import org.springframework.data.mongodb.core.mapping.Field;
 @AllArgsConstructor
 @NoArgsConstructor
 @Document(collection = "commissions")
-public class Commission {
+public class Commission implements Serializable {
     @Id
     private String id;
 

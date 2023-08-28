@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.io.Serializable;
+
 /**
  * Represents a title and its description.
  * This class is often used within other entities, such as Freelancer.
@@ -17,7 +19,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
-public class TitleDescription {
+public class TitleDescription implements Serializable {
 
     // The title associated with this description
     private String title;

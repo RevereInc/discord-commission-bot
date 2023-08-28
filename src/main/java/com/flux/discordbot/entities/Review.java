@@ -9,6 +9,8 @@ import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
+import java.io.Serializable;
+
 /**
  * Represents a review entity stored in a MongoDB collection.
  * This class defines the structure of a review, including the reviewer, rating, title, and content.
@@ -23,7 +25,7 @@ import org.springframework.data.mongodb.core.mapping.Field;
 @Getter
 @Setter
 @Document("reviews")
-public class Review {
+public class Review implements Serializable {
 
     // Unique identifier for the review
     @Id

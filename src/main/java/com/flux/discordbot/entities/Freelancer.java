@@ -8,6 +8,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
+import java.io.Serializable;
 import java.util.List;
 /**
  * @author Flux Development
@@ -21,7 +22,7 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @Document(collection = "freelancers")
-public class Freelancer {
+public class Freelancer implements Serializable {
     // Unique identifier for the Freelancer
     @Id
     private String id;
