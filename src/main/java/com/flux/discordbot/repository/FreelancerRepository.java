@@ -22,4 +22,6 @@ public interface FreelancerRepository extends MongoRepository<Freelancer, String
      */
     Freelancer findFreelancerByUserId(long userId);
 
+    boolean existsFreelancerByUserId(long userId);
+
 }

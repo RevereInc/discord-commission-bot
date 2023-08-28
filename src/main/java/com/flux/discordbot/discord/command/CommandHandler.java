@@ -1,6 +1,7 @@
 package com.flux.discordbot.discord.command;
 
 import com.flux.discordbot.discord.command.impl.FreelancerCommand;
+import com.flux.discordbot.discord.command.impl.InfoCommand;
 import com.flux.discordbot.discord.command.impl.SupportCommand;
 import com.jagrosh.jdautilities.command.CommandClient;
 import com.jagrosh.jdautilities.command.CommandClientBuilder;
@@ -21,6 +22,7 @@ import org.springframework.stereotype.Service;
 public class CommandHandler {
     private final SupportCommand m_supportCommand;
     private final FreelancerCommand m_freelancerCommand;
+    private final InfoCommand m_infoCommand;
 
     /**
      * Get the configured CommandClient for the bot.
@@ -33,7 +35,7 @@ public class CommandHandler {
                 .setCoOwnerIds(811580599068262421L)
                 .setStatus(OnlineStatus.DO_NOT_DISTURB)
                 .setActivity(Activity.watching("x customers"))
-                .addSlashCommands(m_supportCommand, m_freelancerCommand)
+                .addSlashCommands(m_supportCommand, m_freelancerCommand, m_infoCommand)
                 .build();
     }
 }
