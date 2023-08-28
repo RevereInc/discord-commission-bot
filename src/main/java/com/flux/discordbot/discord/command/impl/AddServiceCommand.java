@@ -24,8 +24,8 @@ public class AddServiceCommand extends SlashCommand {
         m_freelancerRepository = p_freelancerRepository;
         m_freelancerService = p_freelancerService;
 
-        this.name = "info";
-        this.help = "Freelancer info";
+        this.name = "addservice";
+        this.help = "add Service to freelancer";
         this.guildOnly = true;
 
         this.userPermissions = new Permission[] { Permission.ADMINISTRATOR };
