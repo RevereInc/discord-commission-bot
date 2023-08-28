@@ -76,14 +76,6 @@ public class InfoCommand extends SlashCommand {
         final List<TitleDescription> titleDescriptionCards = freelancer.getTitleDescriptions();
 
         p_slashCommandEvent.reply(informationEmbed(name, rating, serviceRolesPretty, bio, titleDescriptionCards)).queue();
-
-        /*p_slashCommandEvent.reply(
-                "**NAME** " + name + "\n"
-                + "**AVG RATING** " + rating + "\n"
-                + "**SERVICES** " + serviceRolesPretty + "\n"
-                + "** BIO ** " + bio + "\n"
-                + "**CARDS** i need an embed to display these, too lazy"
-        ).queue();*/
     }
 
     public MessageCreateData informationEmbed(final String p_member, final float p_rating, final String p_serviceRolesPretty,
