@@ -53,6 +53,11 @@ public class FluxEmbedBuilder {
         return this;
     }
 
+    public FluxEmbedBuilder setThumbnail(@Nullable final String p_image) {
+        m_embedBuilder.setThumbnail(p_image);
+        return this;
+    }
+
     public FluxEmbedBuilder setColor(final Color p_color) {
         m_embedBuilder.setColor(p_color);
         return this;

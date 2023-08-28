@@ -75,11 +75,13 @@ public class InfoCommand extends SlashCommand {
 
         final List<TitleDescription> titleDescriptionCards = freelancer.getTitleDescriptions();
 
-        p_slashCommandEvent.reply(informationEmbed(name, rating, serviceRolesPretty, bio, titleDescriptionCards)).queue();
+        final String iconUrl = userId.getAvatarUrl();
+
+        p_slashCommandEvent.reply(informationEmbed(name, rating, serviceRolesPretty, bio, titleDescriptionCards, iconUrl)).queue();
     }
 
     public MessageCreateData informationEmbed(final String p_member, final float p_rating, final String p_serviceRolesPretty,
-                                              final String p_bio, final List<TitleDescription> p_titleDescriptions) {
+                                              final String p_bio, final List<TitleDescription> p_titleDescriptions, final String p_iconUrl) {
         FluxEmbedBuilder fluxEmbedBuilder =  new FluxEmbedBuilder()
                 .setTitle("Freelancer Profile | Flux Solutions")
                 .setDescription("View **" + p_member + "'s** freelancer statistics")
@@ -87,7 +89,8 @@ public class InfoCommand extends SlashCommand {
                 .addField("Rating", String.valueOf(p_rating), false)
                 .addField("Bio", p_bio, false)
                 .setTimeStamp(Instant.now())
-                .setColor(-1);
+                .setColor(-1)
+                .setThumbnail(p_iconUrl);
 
         if (p_titleDescriptions != null && p_titleDescriptions.size() > 0) {
             for (final TitleDescription titleDescription : p_titleDescriptions) {
