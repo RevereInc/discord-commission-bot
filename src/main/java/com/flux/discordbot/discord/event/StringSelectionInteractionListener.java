@@ -73,7 +73,6 @@ public class StringSelectionInteractionListener extends ListenerAdapter {
                 m_commissionRepository.save(commission);
 
                 final String commissionId = commission.getId();
-                final long commissionCreatorId = commission.getUserId();
 
                 final String commissionDescription = commission.getDescription();
                 final String commissionQuote = commission.getQuote();
@@ -88,16 +87,18 @@ public class StringSelectionInteractionListener extends ListenerAdapter {
 
                 p_stringSelectInteractionEvent.getGuild().getTextChannelById(p_stringSelectInteractionEvent.getChannel().getId()).getManager().setParent(targetCategory).queue();
 
-                p_stringSelectInteractionEvent.getJDA().getGuildById("1139719606186020904").createTextChannel("commission-" + commissionId)
-                        .setParent(p_stringSelectInteractionEvent.getJDA().getCategoryById("1141428418328657930"))
-                        .addMemberPermissionOverride(commission.getUserId(), List.of(Permission.VIEW_CHANNEL), Collections.emptyList())
-                        .addMemberPermissionOverride(commission.getApprovedFreelancerId(), List.of(Permission.VIEW_CHANNEL), Collections.emptyList())
-                        .queue(textChannel -> {
-                            textChannel.sendMessage(commissionEmbed(freelancerMember.getUser().getName(), commissionQuote, commissionDescription)).queue();
-                            commission.setPublicChannelId(textChannel.getIdLong());
-                            m_commissionRepository.save(commission);
-                            textChannel.upsertPermissionOverride(Objects.requireNonNull(p_stringSelectInteractionEvent.getJDA().getGuildById("1139719606186020904")).getPublicRole()).setDenied(Permission.VIEW_CHANNEL).queue();
-                        });
+                Objects.requireNonNull(p_stringSelectInteractionEvent.getJDA().getGuildById("1139719606186020904")).createTextChannel("commission-" + commissionId)
+                    .setParent(p_stringSelectInteractionEvent.getJDA().getCategoryById("1141428418328657930"))
+                    //.addMemberPermissionOverride(commission.getUserId(), List.of(Permission.VIEW_CHANNEL), Collections.emptyList())
+                    //.addMemberPermissionOverride(commission.getApprovedFreelancerId(), List.of(Permission.VIEW_CHANNEL), Collections.emptyList())
+                    .queue(textChannel -> {
+                        textChannel.sendMessage(commissionEmbed(freelancerMember.getUser().getName(), commissionQuote, commissionDescription)).queue();
+                        commission.setPublicChannelId(textChannel.getIdLong());
+                        m_commissionRepository.save(commission);
+                        textChannel.upsertPermissionOverride(Objects.requireNonNull(textChannel.getGuild().getMemberById(commission.getUserId()))).setAllowed(Permission.VIEW_CHANNEL).queue();
+                        textChannel.upsertPermissionOverride(Objects.requireNonNull(textChannel.getGuild().getMemberById(commission.getApprovedFreelancerId()))).setAllowed(Permission.VIEW_CHANNEL).queue();
+                        //textChannel.upsertPermissionOverride(Objects.requireNonNull(p_stringSelectInteractionEvent.getJDA().getGuildById("1139719606186020904")).getPublicRole()).setDenied(Permission.VIEW_CHANNEL).queue();
+                });
 
                 p_stringSelectInteractionEvent.getChannel().sendMessage(approveEmbed(freelancerMember.getUser().getName())).queue();
             }
