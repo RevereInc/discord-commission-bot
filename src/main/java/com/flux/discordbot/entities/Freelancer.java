@@ -6,7 +6,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.io.Serializable;
 import java.util.List;
@@ -22,7 +21,7 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @Document(collection = "freelancers")
-public class Freelancer implements Serializable, Cloneable {
+public class Freelancer implements Serializable {
     // Unique identifier for the Freelancer
     @Id
     private String id;
@@ -41,22 +40,4 @@ public class Freelancer implements Serializable, Cloneable {
 
     // List of title descriptions associated with the Freelancer
     private List<TitleDescription> titleDescriptions;
-
-    @Override
-    public Freelancer clone() {
-        try {
-            final Freelancer clone = (Freelancer) super.clone();
-
-            clone.id = id;
-            clone.userId = userId;
-            clone.name = name;
-            clone.serviceRoleIds = serviceRoleIds;
-            clone.bio = bio;
-            clone.titleDescriptions = titleDescriptions;
-
-            return clone;
-        } catch (final CloneNotSupportedException e) {
-            throw new AssertionError();
-        }
-    }
 }
