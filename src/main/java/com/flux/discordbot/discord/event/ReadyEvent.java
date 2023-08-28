@@ -17,3 +17,4 @@ public class ReadyEvent extends ListenerAdapter {
         log.info("Successfully logged into " + event.getJDA().getSelfUser().getName());
     }
 }
+

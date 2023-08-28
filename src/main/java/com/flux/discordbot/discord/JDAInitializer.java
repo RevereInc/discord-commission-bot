@@ -31,6 +31,7 @@ public class JDAInitializer implements CommandLineRunner {
     private final ReadyEvent m_readyEvent;
     private final ButtonClickEvent m_buttonClickEvent;
     private final ModalSubmitEvent m_modalSubmitEvent;
+    private final GuildJoinEvent m_guildJoinEvent;
     private final StringSelectionInteractionListener m_stringSelectionInteractionListener;
     private final CommandHandler m_commandHandler;
 
@@ -56,7 +57,7 @@ public class JDAInitializer implements CommandLineRunner {
         // Register event listeners
         m_shardManager.addEventListener(
                 m_commandHandler.getCommandClient(),
-                m_readyEvent, m_buttonClickEvent, m_modalSubmitEvent, m_stringSelectionInteractionListener
+                m_readyEvent, m_buttonClickEvent, m_modalSubmitEvent, m_stringSelectionInteractionListener, m_guildJoinEvent
         );
 
         log.info("Successfully loaded bot");

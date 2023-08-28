@@ -23,6 +23,7 @@ import org.springframework.stereotype.Service;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author Flux
@@ -48,7 +49,7 @@ public class StringSelectionInteractionListener extends ListenerAdapter {
                         .build();
 
                 TextInput quote = TextInput.create("quote", "Quote", TextInputStyle.SHORT)
-                        .setRequiredRange(1, 2)
+                        .setRequiredRange(1, 5)
                         .setPlaceholder("Example: 50")
                         .setRequired(true)
                         .build();
@@ -95,7 +96,7 @@ public class StringSelectionInteractionListener extends ListenerAdapter {
                             textChannel.sendMessage(commissionEmbed(freelancerMember.getUser().getName(), commissionQuote, commissionDescription)).queue();
                             commission.setPublicChannelId(textChannel.getIdLong());
                             m_commissionRepository.save(commission);
-                            textChannel.upsertPermissionOverride(p_stringSelectInteractionEvent.getJDA().getGuildById("1139719606186020904").getPublicRole()).setDenied(Permission.VIEW_CHANNEL).queue();
+                            textChannel.upsertPermissionOverride(Objects.requireNonNull(p_stringSelectInteractionEvent.getJDA().getGuildById("1139719606186020904")).getPublicRole()).setDenied(Permission.VIEW_CHANNEL).queue();
                         });
 
                 p_stringSelectInteractionEvent.getChannel().sendMessage(approveEmbed(freelancerMember.getUser().getName())).queue();
