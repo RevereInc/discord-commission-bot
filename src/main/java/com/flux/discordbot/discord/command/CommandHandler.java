@@ -23,6 +23,7 @@ public class CommandHandler {
     private final InfoCommand m_infoCommand;
     private final AddServiceCommand m_addServiceCommand;
     private final CardCommand m_cardCommand;
+    private final SyncCommand m_syncCommand;
 
     /**
      * Get the configured CommandClient for the bot.
@@ -35,7 +36,7 @@ public class CommandHandler {
                 .setCoOwnerIds(811580599068262421L)
                 .setStatus(OnlineStatus.DO_NOT_DISTURB)
                 .setActivity(Activity.watching("x customers"))
-                .addSlashCommands(m_supportCommand, m_freelancerCommand, m_infoCommand, m_addServiceCommand, m_cardCommand)
+                .addSlashCommands(m_supportCommand, m_freelancerCommand, m_infoCommand, m_addServiceCommand, m_cardCommand, m_syncCommand)
                 .build();
     }
 }

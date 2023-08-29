@@ -85,6 +85,7 @@ public class CardCommand extends SlashCommand {
 
             this.name = "remove";
             this.help = "Remove a card from your displayed cards";
+            this.guildOnly = true;
 
             this.options = Collections.singletonList(
                     new OptionData(OptionType.INTEGER, "index", "Index of the card (1-3)").setRequired(true)
