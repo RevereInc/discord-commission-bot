@@ -28,6 +28,7 @@ public class CommandHandler {
     private final RemoveServiceCommand m_removeServiceCommand;
     private final CardCommand m_cardCommand;
     private final SyncCommand m_syncCommand;
+    private final FluxInfoCommand m_fluxInfoCommand;
 
     private final CommissionRepository m_commissionRepository;
 
@@ -42,7 +43,7 @@ public class CommandHandler {
                 .setCoOwnerIds(811580599068262421L)
                 .setStatus(OnlineStatus.DO_NOT_DISTURB)
                 .setActivity(Activity.watching(m_commissionRepository.count() + " commissions"))
-                .addSlashCommands(m_supportCommand, m_banCommand, m_kickCommand, m_removeServiceCommand, m_freelancerCommand, m_infoCommand, m_addServiceCommand, m_cardCommand, m_syncCommand)
+                .addSlashCommands(m_supportCommand, m_fluxInfoCommand, m_banCommand, m_kickCommand, m_removeServiceCommand, m_freelancerCommand, m_infoCommand, m_addServiceCommand, m_cardCommand, m_syncCommand)
                 .build();
     }
 }

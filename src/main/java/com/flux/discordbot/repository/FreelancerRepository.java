@@ -30,4 +30,10 @@ public interface FreelancerRepository extends MongoRepository<Freelancer, String
      */
     boolean existsFreelancerByUserId(long userId);
 
+    /**
+     * Retrieve the total amount of all freelancers
+     *
+     * @return The count of all freelancers
+     */
+    long count();
 }

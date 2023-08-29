@@ -41,7 +41,6 @@ public interface CommissionRepository extends MongoRepository<Commission, String
      */
     Commission findCommissionByUserId(long userId);
 
-
     /**
      * Retrieve the total amount of all commissions
      *
