@@ -33,6 +33,11 @@ public class SyncCommand extends SlashCommand {
             return;
         }
 
+        if(m_freelancerRepository.findFreelancerByUserId(member.getIdLong()).getServiceRoleIds() == null) {
+            p_slashCommandEvent.reply("You do not have any services.").queue();
+            return;
+        }
+
         m_rankSyncService.syncMember(member);
 
         p_slashCommandEvent.reply("Synced your roles in both servers").setEphemeral(true).queue();
