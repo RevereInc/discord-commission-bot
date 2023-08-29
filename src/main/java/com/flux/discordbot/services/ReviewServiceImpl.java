@@ -15,7 +15,6 @@ public class ReviewServiceImpl implements ReviewService {
 
     @Override
     public float averageRating(final Freelancer p_freelancer) {
-        final long userId = p_freelancer.getUserId();
         final List<Review> reviews = m_reviewRepository.findAllByFreelancer(p_freelancer);
 
         if (reviews.size() < 1) {

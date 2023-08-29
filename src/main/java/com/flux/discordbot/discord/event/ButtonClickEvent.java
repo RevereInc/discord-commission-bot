@@ -83,12 +83,6 @@ public class ButtonClickEvent extends ListenerAdapter {
 
                 acceptedCommissions.computeIfAbsent(freelancerId, k -> new ArrayList<>()).add(commissionMessageId);
 
-                final long channelId = Long.parseLong(p_buttonInteractionEvent.getMessage().getChannel().getId());
-                final Commission commission = m_commissionRepository.findCommissionByChannelId(channelId);
-                //commission.setApprovedFreelancerId(freelancerId);
-
-                //m_commissionRepository.save(commission);
-
                 p_buttonInteractionEvent.reply(acceptedCommissionEmbed(member)).queue();
             }
 

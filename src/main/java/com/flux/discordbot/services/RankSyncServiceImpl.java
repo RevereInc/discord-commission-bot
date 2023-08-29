@@ -60,8 +60,11 @@ public class RankSyncServiceImpl implements RankSyncService {
         }
 
         final Guild mainGuild = p_member.getJDA().getGuildById(mainGuildId);
+        assert mainGuild != null;
         final List<Role> mainGuildRoles = mainGuild.getRoles();
+
         final Guild commissionGuild = p_member.getJDA().getGuildById(commissionGuildId);
+        assert commissionGuild != null;
         final List<Role> commissionGuildRoles = commissionGuild.getRoles();
 
         if (mainGuildRoles.contains(p_role)) {
