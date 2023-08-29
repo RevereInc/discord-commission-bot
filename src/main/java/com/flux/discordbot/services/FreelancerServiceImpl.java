@@ -31,6 +31,15 @@ public class FreelancerServiceImpl implements FreelancerService {
         m_freelancerRepository.save(p_freelancer);
     }
 
+    @Override
+    public void removeService(final Freelancer p_freelancer, final Role p_role) {
+        final List<Long> serviceRoles = p_freelancer.getServiceRoleIds();
+        serviceRoles.remove(p_role.getIdLong());
+        p_freelancer.setServiceRoleIds(serviceRoles);
+
+        m_freelancerRepository.save(p_freelancer);
+    }
+
     /**
      * Check if a freelancer has reached the maximum number of cards (TitleDescriptions).
      *

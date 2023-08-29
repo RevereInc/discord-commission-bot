@@ -14,6 +14,14 @@ public interface FreelancerService {
     void addService(Freelancer p_freelancer, Role p_role);
 
     /**
+     * Remove a service to a freelancer, associating it with a specific role.
+     *
+     * @param p_freelancer The Freelancer object to which the service is removed.
+     * @param p_role       The Role object representing the service's role.
+     */
+    void removeService(Freelancer p_freelancer, Role p_role);
+
+    /**
      * Check if a freelancer has reached the maximum number of cards.
      *
      * @param p_freelancer The Freelancer object to check.
