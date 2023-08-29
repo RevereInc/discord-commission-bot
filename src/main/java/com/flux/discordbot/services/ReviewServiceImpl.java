@@ -15,7 +15,6 @@ public class ReviewServiceImpl implements ReviewService {
 
     @Override
     public float averageRating(final Freelancer p_freelancer) {
-        final long userId = p_freelancer.getUserId();
         final List<Review> reviews = m_reviewRepository.findAllByFreelancer(p_freelancer);
 
         if (reviews.size() < 1) {
@@ -31,5 +30,13 @@ public class ReviewServiceImpl implements ReviewService {
         }
 
         return reviewRatingSum / amountOfReviews;
+    }
+
+    @Override
+    public String parseRating(final float p_rating) {
+        if (Float.compare(p_rating, -1.0F) == 0) {
+            return "No ratings";
+        }
+        return String.valueOf(p_rating); // TODO: Make emoji parser
     }
 }

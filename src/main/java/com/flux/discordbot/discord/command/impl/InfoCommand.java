@@ -56,7 +56,8 @@ public class InfoCommand extends SlashCommand {
 
         final String name = freelancer.getName();
 
-        final float rating = m_reviewService.averageRating(freelancer); // TODO: Create star emoji representation
+        final float rating = m_reviewService.averageRating(freelancer);
+        final String prettyRating = m_reviewService.parseRating(rating);
 
         final List<Role> serviceRoles = freelancer.getServiceRoleIds()
                 .stream()
@@ -77,10 +78,10 @@ public class InfoCommand extends SlashCommand {
 
         final String iconUrl = userId.getAvatarUrl();
 
-        p_slashCommandEvent.reply(informationEmbed(name, rating, serviceRolesPretty, bio, titleDescriptionCards, iconUrl)).queue();
+        p_slashCommandEvent.reply(informationEmbed(name, prettyRating, serviceRolesPretty, bio, titleDescriptionCards, iconUrl)).queue();
     }
 
-    public MessageCreateData informationEmbed(final String p_member, final float p_rating, final String p_serviceRolesPretty,
+    public MessageCreateData informationEmbed(final String p_member, final String p_rating, final String p_serviceRolesPretty,
                                               final String p_bio, final List<TitleDescription> p_titleDescriptions, final String p_iconUrl) {
         FluxEmbedBuilder fluxEmbedBuilder =  new FluxEmbedBuilder()
                 .setTitle("Freelancer Profile | Flux Solutions")
