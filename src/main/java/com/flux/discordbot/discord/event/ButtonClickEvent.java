@@ -162,7 +162,7 @@ public class ButtonClickEvent extends ListenerAdapter {
                     return;
                 }
 
-                commission.setFinished(true);
+                commission.setState(Commission.State.COMPLETED);
                 m_commissionRepository.save(commission);
 
                 p_buttonInteractionEvent.reply(customMessageEmbed("Cancelling commission, channel will be deleted after 10 seconds.")).queue();
@@ -200,7 +200,7 @@ public class ButtonClickEvent extends ListenerAdapter {
                 if(commission.isPaymentPending()) {
                     p_buttonInteractionEvent.reply(customMessageEmbed("Waiting for payment before finishing commission")).queue();
                 } else {
-                    commission.setFinished(true);
+                    commission.setState(Commission.State.COMPLETED);
                     m_commissionRepository.save(commission);
                     p_buttonInteractionEvent.reply(customMessageEmbed("Commission has been marked as finished")).queue();
                 }
