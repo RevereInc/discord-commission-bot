@@ -4,6 +4,8 @@ import com.flux.discordbot.entities.Commission;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 
+import java.util.List;
+
 /**
  * Repository interface for managing Commission entities in MongoDB.
  * This interface provides methods for CRUD operations on Commission objects.
@@ -38,4 +40,6 @@ public interface CommissionRepository extends MongoRepository<Commission, String
      * @return The Commission object associated with the given user ID.
      */
     Commission findCommissionByUserId(long userId);
+
+    long count();
 }

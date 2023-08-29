@@ -1,6 +1,7 @@
 package com.flux.discordbot.discord.command;
 
 import com.flux.discordbot.discord.command.impl.*;
+import com.flux.discordbot.repository.CommissionRepository;
 import com.jagrosh.jdautilities.command.CommandClient;
 import com.jagrosh.jdautilities.command.CommandClientBuilder;
 import lombok.AllArgsConstructor;
@@ -28,6 +29,8 @@ public class CommandHandler {
     private final CardCommand m_cardCommand;
     private final SyncCommand m_syncCommand;
 
+    private final CommissionRepository m_commissionRepository;
+
     /**
      * Get the configured CommandClient for the bot.
      *
@@ -38,7 +41,7 @@ public class CommandHandler {
                 .setOwnerId(1034531618951528488L)
                 .setCoOwnerIds(811580599068262421L)
                 .setStatus(OnlineStatus.DO_NOT_DISTURB)
-                .setActivity(Activity.watching("x customers"))
+                .setActivity(Activity.watching(m_commissionRepository.count() + " commissions"))
                 .addSlashCommands(m_supportCommand, m_banCommand, m_kickCommand, m_removeServiceCommand, m_freelancerCommand, m_infoCommand, m_addServiceCommand, m_cardCommand, m_syncCommand)
                 .build();
     }

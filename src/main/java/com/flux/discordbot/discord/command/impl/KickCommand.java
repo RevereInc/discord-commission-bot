@@ -22,8 +22,8 @@ public class KickCommand extends SlashCommand {
     @Autowired
     public KickCommand() {
 
-        this.name = "ban";
-        this.help = "Ban a user";
+        this.name = "kick";
+        this.help = "Kick a user";
         this.guildOnly = true;
 
         this.userPermissions = new Permission[] { Permission.ADMINISTRATOR };
