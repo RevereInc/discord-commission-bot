@@ -41,7 +41,7 @@ public class JDAInitializer implements CommandLineRunner {
     @Override
     public void run(final String... args) {
         // Create and configure the ShardManager
-        final DefaultShardManagerBuilder builder = DefaultShardManagerBuilder.createDefault("MTE0MDQxODIwNjA2NzA4MTI0Ng.G4l2tm.it5LGO-qtotBCV_wzmkwPEFEqsa0Nu9Z_eqaSg");
+        final DefaultShardManagerBuilder builder = DefaultShardManagerBuilder.createDefault("MTE0MDQxODIwNjA2NzA4MTI0Ng.GssPbK.AmNlNs6jlzIyaa0sJ7p-G2fEx9OfH9PYVcdETE");
 
         // Enable required intents
         builder.enableIntents(
@@ -60,6 +60,6 @@ public class JDAInitializer implements CommandLineRunner {
                 m_readyEvent, m_buttonClickEvent, m_modalSubmitEvent, m_stringSelectionInteractionListener, m_guildJoinEvent
         );
 
-        log.info("Successfully loaded bot");
+        log.info("Successfully initialized JDA");
     }
 }

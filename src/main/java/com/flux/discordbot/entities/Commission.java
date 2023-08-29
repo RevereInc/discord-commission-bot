@@ -16,10 +16,10 @@ import java.io.Serializable;
  * @project Commission-Discord-Bot-SpringBoot
  * @date 8/27/2023
  */
-@Getter
-@Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@Getter
+@Setter
 @Document(collection = "commissions")
 public class Commission implements Serializable {
     @Id

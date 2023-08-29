@@ -17,9 +17,9 @@ import java.util.List;
  * Represents a Freelancer entity stored in a MongoDB collection.
  */
 @AllArgsConstructor
+@NoArgsConstructor
 @Getter
 @Setter
-@NoArgsConstructor
 @Document(collection = "freelancers")
 public class Freelancer implements Serializable {
     // Unique identifier for the Freelancer
