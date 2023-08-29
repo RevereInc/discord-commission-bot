@@ -92,6 +92,7 @@ public class StringSelectionInteractionListener extends ListenerAdapter {
                     .queue(textChannel -> {
                         textChannel.sendMessage(commissionEmbed(freelancerMember.getUser().getName(), commissionQuote, commissionDescription)).queue();
                         commission.setPublicChannelId(textChannel.getIdLong());
+                        commission.setState(Commission.State.IN_PROGRESS);
                         m_commissionRepository.save(commission);
                         textChannel.upsertPermissionOverride(Objects.requireNonNull(textChannel.getGuild().getMemberById(commission.getUserId()))).setAllowed(Permission.VIEW_CHANNEL).queue();
                         textChannel.upsertPermissionOverride(Objects.requireNonNull(textChannel.getGuild().getMemberById(commission.getApprovedFreelancerId()))).setAllowed(Permission.VIEW_CHANNEL).queue();
