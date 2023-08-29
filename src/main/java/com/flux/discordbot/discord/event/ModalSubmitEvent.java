@@ -64,7 +64,21 @@ public class ModalSubmitEvent extends ListenerAdapter {
 
                 p_modalInteractionEvent.reply(getSucceedCommissionCreation()).setEphemeral(true).queue();
             }
+            case "quote-model" -> {
+                p_modalInteractionEvent.getUser().openPrivateChannel().flatMap(channel -> channel.sendMessage(sendQuoteOffer("A freelancer has offered you a quote of $" + p_modalInteractionEvent.getValue("quote").getAsString()))).queue();
+            }
         }
+    }
+
+    public MessageCreateData sendQuoteOffer(String message) {
+        return new FluxEmbedBuilder()
+                .setTitle("New Quote | Flux Solutions")
+                .setDescription(message)
+                .setTimeStamp(Instant.now())
+                .setColor(-1)
+                .addButton(ButtonStyle.SUCCESS, "accept-quote", "Accept Quote", Emoji.fromUnicode("U+1F3AB"))
+                .addButton(ButtonStyle.DANGER, "decline-quote", "Decline Quote", Emoji.fromUnicode("U+1F3AB"))
+                .build();
     }
 
     public MessageCreateData getCommissionEmbed(final String p_user, final String p_description, final String p_value) {

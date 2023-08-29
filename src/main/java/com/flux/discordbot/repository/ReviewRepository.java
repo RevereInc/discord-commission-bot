@@ -30,4 +30,11 @@ public interface ReviewRepository extends MongoRepository<Review, String> {
      * @return All the reviews associated with said freelancer.
      */
     List<Review> findAllByFreelancer(Freelancer freelancer);
+
+    /**
+     * Retrieve the total amount of all reviews
+     *
+     * @return The count of all reviews
+     */
+    long count();
 }

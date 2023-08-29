@@ -16,9 +16,9 @@ import java.io.Serializable;
  * @date 8/27/2023
  */
 @AllArgsConstructor
+@NoArgsConstructor
 @Getter
 @Setter
-@NoArgsConstructor
 public class TitleDescription implements Serializable {
 
     // The title associated with this description

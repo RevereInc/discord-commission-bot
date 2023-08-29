@@ -11,10 +11,14 @@ import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import net.dv8tion.jda.api.interactions.components.ActionRow;
 import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle;
 import net.dv8tion.jda.api.interactions.components.selections.SelectMenu;
 import net.dv8tion.jda.api.interactions.components.selections.SelectOption;
 import net.dv8tion.jda.api.interactions.components.selections.StringSelectMenu;
+import net.dv8tion.jda.api.interactions.components.text.TextInput;
+import net.dv8tion.jda.api.interactions.components.text.TextInputStyle;
+import net.dv8tion.jda.api.interactions.modals.Modal;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 import net.dv8tion.jda.internal.interactions.component.SelectMenuImpl;
 import org.jetbrains.annotations.NotNull;
@@ -83,13 +87,19 @@ public class ButtonClickEvent extends ListenerAdapter {
 
                 acceptedCommissions.computeIfAbsent(freelancerId, k -> new ArrayList<>()).add(commissionMessageId);
 
-                final long channelId = Long.parseLong(p_buttonInteractionEvent.getMessage().getChannel().getId());
-                final Commission commission = m_commissionRepository.findCommissionByChannelId(channelId);
-                //commission.setApprovedFreelancerId(freelancerId);
-
-                //m_commissionRepository.save(commission);
-
                 p_buttonInteractionEvent.reply(acceptedCommissionEmbed(member)).queue();
+            }
+
+            case "quote-commission" -> {
+                TextInput quote = TextInput.create("quote", "Quote", TextInputStyle.SHORT)
+                        .setRequiredRange(1, 5)
+                        .setPlaceholder("Example: 50")
+                        .setRequired(true)
+                        .build();
+
+
+                Modal modal = Modal.create("quote-model", "").addComponents(ActionRow.of(quote)).build();
+                p_buttonInteractionEvent.replyModal(modal).queue();
             }
 
             // ADMINISTRATOR ACTIONS

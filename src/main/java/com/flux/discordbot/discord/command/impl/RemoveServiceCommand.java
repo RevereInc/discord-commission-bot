@@ -16,16 +16,16 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
-public class AddServiceCommand extends SlashCommand {
+public class RemoveServiceCommand extends SlashCommand {
     private final FreelancerRepository m_freelancerRepository;
     private final FreelancerService m_freelancerService;
     @Autowired
-    public AddServiceCommand(final FreelancerRepository p_freelancerRepository, final FreelancerService p_freelancerService) {
+    public RemoveServiceCommand(final FreelancerRepository p_freelancerRepository, final FreelancerService p_freelancerService) {
         m_freelancerRepository = p_freelancerRepository;
         m_freelancerService = p_freelancerService;
 
-        this.name = "addservice";
-        this.help = "add Service to freelancer";
+        this.name = "removeservice";
+        this.help = "Remove Service to freelancer";
         this.guildOnly = true;
 
         this.userPermissions = new Permission[] { Permission.ADMINISTRATOR };
@@ -34,7 +34,7 @@ public class AddServiceCommand extends SlashCommand {
         // Define command options
         this.options = List.of(
                 new OptionData(OptionType.USER, "user", "the freelancer").setRequired(true),
-                new OptionData(OptionType.ROLE, "service", "Service to add").setRequired(true)
+                new OptionData(OptionType.ROLE, "service", "Service to remove").setRequired(true)
         );
     }
 
@@ -50,8 +50,13 @@ public class AddServiceCommand extends SlashCommand {
 
         final Freelancer freelancer = m_freelancerRepository.findFreelancerByUserId(user.getIdLong());
 
-        m_freelancerService.addService(freelancer, role);
+        if (!freelancer.getServiceRoleIds().contains(role.getIdLong())) {
+            p_slashCommandEvent.reply("You do not have this service.").queue();
+            return;
+        }
 
-        p_slashCommandEvent.reply("Added service `" + role.getName() + "` to `" + user.getName() + "`").queue();
+        m_freelancerService.removeService(freelancer, role);
+
+        p_slashCommandEvent.reply("Removed service `" + role.getName() + "` from `" + user.getName() + "`").queue();
     }
 }
