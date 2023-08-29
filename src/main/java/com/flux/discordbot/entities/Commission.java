@@ -50,7 +50,7 @@ public class Commission implements Serializable {
     private long publicChannelId;
 
     // Mark the commission as finished
-    private boolean finished;
+    private State state;
 
     // Check if the payment is still pending
     private boolean paymentPending;
@@ -67,5 +67,9 @@ public class Commission implements Serializable {
                 ", approvedFreelancerId=" + approvedFreelancerId +
                 ", channelId=" + channelId +
                 '}';
+    }
+
+    public enum State implements Serializable {
+        COMPLETED, IN_PROGRESS, PENDING;
     }
 }
