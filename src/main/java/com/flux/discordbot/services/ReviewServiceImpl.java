@@ -13,22 +13,32 @@ import java.util.List;
 public class ReviewServiceImpl implements ReviewService {
     private final ReviewRepository m_reviewRepository;
 
+    /**
+     * Calculate the average rating for a freelancer based on their reviews.
+     *
+     * @param p_freelancer The Freelancer object for which the average rating is calculated.
+     * @return The average rating as a floating-point number. Returns -1 if no reviews are available.
+     */
     @Override
     public float averageRating(final Freelancer p_freelancer) {
+        // Retrieve all reviews for the given freelancer
         final List<Review> reviews = m_reviewRepository.findAllByFreelancer(p_freelancer);
 
+        // If no reviews are available, return -1
         if (reviews.size() < 1) {
             return -1;
         }
 
         final int amountOfReviews = reviews.size();
 
+        // Calculate the total sum of review ratings
         float reviewRatingSum = 0;
 
         for (final Review review : reviews) {
             reviewRatingSum += review.getRating();
         }
 
+        // Calculate and return the average rating
         return reviewRatingSum / amountOfReviews;
     }
 }

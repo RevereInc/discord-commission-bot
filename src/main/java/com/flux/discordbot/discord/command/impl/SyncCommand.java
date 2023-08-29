@@ -27,6 +27,7 @@ public class SyncCommand extends SlashCommand {
     protected void execute(final SlashCommandEvent p_slashCommandEvent) {
         final Member member = p_slashCommandEvent.getMember();
 
+        assert member != null;
         if (!m_freelancerRepository.existsFreelancerByUserId(member.getIdLong())) {
             p_slashCommandEvent.reply("You are not currently a freelancer! Feel free to apply.").setEphemeral(true).queue();
             return;

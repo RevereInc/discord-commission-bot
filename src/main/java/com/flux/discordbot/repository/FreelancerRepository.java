@@ -22,6 +22,12 @@ public interface FreelancerRepository extends MongoRepository<Freelancer, String
      */
     Freelancer findFreelancerByUserId(long userId);
 
+    /**
+     * Check if a freelancer with the specified user ID exists in the repository.
+     *
+     * @param userId The ID of the user associated with the freelancer.
+     * @return `true` if a freelancer with the given user ID exists, `false` otherwise.
+     */
     boolean existsFreelancerByUserId(long userId);
 
 }

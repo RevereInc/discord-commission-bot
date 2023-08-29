@@ -32,7 +32,6 @@ public class AddServiceCommand extends SlashCommand {
         this.userMissingPermMessage = "You are missing the `ADMINISTRATOR` permission required to execute this command.";
 
         // Define command options
-
         this.options = List.of(
                 new OptionData(OptionType.USER, "user", "the freelancer").setRequired(true),
                 new OptionData(OptionType.ROLE, "service", "Service to add").setRequired(true)

@@ -16,6 +16,12 @@ import java.util.Objects;
 public class FreelancerServiceImpl implements FreelancerService {
     private final FreelancerRepository m_freelancerRepository;
 
+    /**
+     * Add a service (Role) to a freelancer and update the database.
+     *
+     * @param p_freelancer The Freelancer object to which the service is added.
+     * @param p_role       The Role object representing the service's role.
+     */
     @Override
     public void addService(final Freelancer p_freelancer, final Role p_role) {
         final List<Long> serviceRoles = p_freelancer.getServiceRoleIds();
@@ -25,6 +31,12 @@ public class FreelancerServiceImpl implements FreelancerService {
         m_freelancerRepository.save(p_freelancer);
     }
 
+    /**
+     * Check if a freelancer has reached the maximum number of cards (TitleDescriptions).
+     *
+     * @param p_freelancer The Freelancer object to check.
+     * @return `true` if the freelancer has reached the maximum number of cards, `false` otherwise.
+     */
     @Override
     public boolean maxCards(final Freelancer p_freelancer) {
         if (p_freelancer.getTitleDescriptions() == null) {
@@ -33,6 +45,12 @@ public class FreelancerServiceImpl implements FreelancerService {
         return p_freelancer.getTitleDescriptions().size() >= 3;
     }
 
+    /**
+     * Add a card (TitleDescription) to a freelancer and update the database.
+     *
+     * @param p_freelancer      The Freelancer object to which the card is added.
+     * @param p_titleDescription The TitleDescription object representing the card's details.
+     */
     @Override
     public void addCard(final Freelancer p_freelancer, final TitleDescription p_titleDescription) {
 
@@ -44,6 +62,13 @@ public class FreelancerServiceImpl implements FreelancerService {
         m_freelancerRepository.save(p_freelancer);
     }
 
+    /**
+     * Remove a card (TitleDescription) from a freelancer based on its index and update the database.
+     *
+     * @param p_freelancer The Freelancer object from which the card is removed.
+     * @param p_index      The index of the card to remove.
+     * @return The TitleDescription object representing the removed card, or null if the index is out of bounds.
+     */
     @Override
     public TitleDescription removeCard(final Freelancer p_freelancer, final int p_index) {
         if (p_freelancer.getTitleDescriptions().size() < p_index) {

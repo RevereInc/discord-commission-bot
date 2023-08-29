@@ -34,6 +34,12 @@ public class RankSyncServiceImpl implements RankSyncService {
         roleRelationBidiMap.put(1140378918520623164L, 1141049396872630356L); // 3D Design
     }
 
+    /**
+     * Get the related role in the opposite guild for a given role.
+     *
+     * @param p_role The Role object for which the related role is retrieved.
+     * @return The corresponding Role object in the opposite guild, or null if not found.
+     */
     @Override
     public Role getRoleRelation(final Role p_role) {
         final long roleId = p_role.getIdLong();
@@ -51,6 +57,12 @@ public class RankSyncServiceImpl implements RankSyncService {
         return null;
     }
 
+    /**
+     * Synchronize a member to a specific role in both the main and commission guilds.
+     *
+     * @param p_member The Member object to synchronize.
+     * @param p_role   The Role object to which the member should be synchronized.
+     */
     @Override
     public void syncMemberToRole(final Member p_member, final Role p_role) {
         final Role roleRelation = getRoleRelation(p_role);
@@ -84,6 +96,11 @@ public class RankSyncServiceImpl implements RankSyncService {
         }
     }
 
+    /**
+     * Synchronize a member to all their roles in both the main and commission guilds.
+     *
+     * @param p_member The Member object to synchronize.
+     */
     @Override
     public void syncMember(final Member p_member) {
         for (final Role role : p_member.getRoles()) {
