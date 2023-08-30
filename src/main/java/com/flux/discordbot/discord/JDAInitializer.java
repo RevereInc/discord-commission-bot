@@ -59,7 +59,8 @@ public class JDAInitializer implements CommandLineRunner {
         // Register event listeners
         m_shardManager.addEventListener(
                 m_commandHandler.getCommandClient(),
-                m_readyEvent, m_buttonClickEvent, m_modalSubmitEvent, m_stringSelectionInteractionListener, m_guildJoinEvent
+                m_readyEvent, m_buttonClickEvent, m_modalSubmitEvent,
+                m_stringSelectionInteractionListener, m_guildJoinEvent
         );
 
         log.info("Successfully initialized JDA");
