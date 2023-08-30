@@ -1,10 +1,11 @@
 package com.flux.discordbot.discord.event;
 
+import lombok.AllArgsConstructor;
+
 import com.flux.discordbot.discord.utility.CommissionData;
 import com.flux.discordbot.discord.utility.FluxEmbedBuilder;
 import com.flux.discordbot.entities.Commission;
 import com.flux.discordbot.repository.CommissionRepository;
-import lombok.AllArgsConstructor;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.channel.concrete.Category;
@@ -21,8 +22,6 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
-import java.util.Collections;
-import java.util.List;
 import java.util.Objects;
 
 /**

@@ -1,14 +1,9 @@
 package com.flux.discordbot.discord.command.impl;
 
 import com.flux.discordbot.discord.utility.FluxEmbedBuilder;
-import com.flux.discordbot.entities.Freelancer;
-import com.flux.discordbot.repository.FreelancerRepository;
-import com.flux.discordbot.services.FreelancerService;
-import com.jagrosh.jdautilities.command.Interaction;
 import com.jagrosh.jdautilities.command.SlashCommand;
 import com.jagrosh.jdautilities.command.SlashCommandEvent;
 import net.dv8tion.jda.api.Permission;
-import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
@@ -24,7 +19,6 @@ import java.util.concurrent.TimeUnit;
 @Service
 public class BanCommand extends SlashCommand {
 
-    @Autowired
     public BanCommand() {
 
         this.name = "ban";

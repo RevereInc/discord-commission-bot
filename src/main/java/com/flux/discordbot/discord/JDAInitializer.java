@@ -2,9 +2,11 @@ package com.flux.discordbot.discord;
 
 import com.flux.discordbot.discord.command.CommandHandler;
 import com.flux.discordbot.discord.event.*;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.sharding.DefaultShardManagerBuilder;
 import net.dv8tion.jda.api.sharding.ShardManager;

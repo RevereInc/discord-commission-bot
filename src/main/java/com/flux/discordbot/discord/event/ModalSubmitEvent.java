@@ -1,16 +1,16 @@
 package com.flux.discordbot.discord.event;
 
+import lombok.AllArgsConstructor;
+
 import com.flux.discordbot.discord.utility.CommissionData;
 import com.flux.discordbot.discord.utility.FluxEmbedBuilder;
 import com.flux.discordbot.entities.Commission;
 import com.flux.discordbot.repository.CommissionRepository;
-import lombok.AllArgsConstructor;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle;
-import net.dv8tion.jda.api.interactions.components.selections.StringSelectMenu;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
