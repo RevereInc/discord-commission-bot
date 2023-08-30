@@ -52,6 +52,8 @@ public class AddServiceCommand extends SlashCommand {
 
         m_freelancerService.addService(freelancer, role);
 
+        p_slashCommandEvent.getGuild().addRoleToMember(user, role).queue();
+
         p_slashCommandEvent.reply("Added service `" + role.getName() + "` to `" + user.getName() + "`").queue();
     }
 }
