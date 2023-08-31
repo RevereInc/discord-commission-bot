@@ -2,9 +2,11 @@ package com.flux.discordbot.discord;
 
 import com.flux.discordbot.discord.command.CommandHandler;
 import com.flux.discordbot.discord.event.*;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.sharding.DefaultShardManagerBuilder;
 import net.dv8tion.jda.api.sharding.ShardManager;
@@ -57,7 +59,8 @@ public class JDAInitializer implements CommandLineRunner {
         // Register event listeners
         m_shardManager.addEventListener(
                 m_commandHandler.getCommandClient(),
-                m_readyEvent, m_buttonClickEvent, m_modalSubmitEvent, m_stringSelectionInteractionListener, m_guildJoinEvent
+                m_readyEvent, m_buttonClickEvent, m_modalSubmitEvent,
+                m_stringSelectionInteractionListener, m_guildJoinEvent
         );
 
         log.info("Successfully initialized JDA");

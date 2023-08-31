@@ -6,19 +6,12 @@ import com.flux.discordbot.repository.FreelancerRepository;
 import com.flux.discordbot.repository.ReviewRepository;
 import com.jagrosh.jdautilities.command.SlashCommand;
 import com.jagrosh.jdautilities.command.SlashCommandEvent;
-import lombok.AllArgsConstructor;
 import net.dv8tion.jda.api.Permission;
-import net.dv8tion.jda.api.entities.User;
-import net.dv8tion.jda.api.interactions.commands.OptionType;
-import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
-import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.TimeUnit;
 
 @Service
 public class FluxInfoCommand extends SlashCommand {

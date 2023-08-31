@@ -1,8 +1,8 @@
 package com.flux.discordbot.entities;
 
 import lombok.AllArgsConstructor;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Getter;
 import lombok.Setter;
 
 import java.io.Serializable;

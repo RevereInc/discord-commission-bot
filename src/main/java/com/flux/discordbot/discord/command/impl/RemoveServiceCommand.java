@@ -57,6 +57,8 @@ public class RemoveServiceCommand extends SlashCommand {
 
         m_freelancerService.removeService(freelancer, role);
 
+        p_slashCommandEvent.getGuild().removeRoleFromMember(user, role).queue();
+
         p_slashCommandEvent.reply("Removed service `" + role.getName() + "` from `" + user.getName() + "`").queue();
     }
 }
