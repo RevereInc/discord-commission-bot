@@ -32,3 +32,4 @@ build/
 frontend
 ### VS Code ###
 .vscode/
+/frontend/generated/
