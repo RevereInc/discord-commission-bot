@@ -62,7 +62,6 @@ public class FreelancerServiceImpl implements FreelancerService {
      */
     @Override
     public void addCard(final Freelancer p_freelancer, final TitleDescription p_titleDescription) {
-
         final List<TitleDescription> titleDescriptions = Objects.requireNonNullElse(p_freelancer.getTitleDescriptions(), new ArrayList<>());
         titleDescriptions.add(p_titleDescription);
 
