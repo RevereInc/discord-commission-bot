@@ -5,8 +5,8 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
 
 @Route("/commissions")
-class CommissionsView extends VerticalLayout {
-    CommissionsView() {
+public class CommissionsView extends VerticalLayout {
+    public CommissionsView() {
         add(new H1("uhm commissions!!!"));
     }
 }
