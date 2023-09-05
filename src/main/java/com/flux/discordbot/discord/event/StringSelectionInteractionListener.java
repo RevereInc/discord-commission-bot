@@ -69,6 +69,9 @@ public class StringSelectionInteractionListener extends ListenerAdapter {
                 final Commission commission = m_commissionRepository.findCommissionByChannelId(interactionChannelId);
                 commission.setApprovedFreelancerId(Long.parseLong(selectedFreelancer));
 
+                assert freelancerMember != null;
+                commission.setFreelancer(freelancerMember.getUser().getName());
+
                 m_commissionRepository.save(commission);
 
                 final String commissionId = commission.getId();
