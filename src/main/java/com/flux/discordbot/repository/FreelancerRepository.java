@@ -2,7 +2,6 @@ package com.flux.discordbot.repository;
 
 import com.flux.discordbot.entities.Freelancer;
 import org.springframework.data.mongodb.repository.MongoRepository;
-import org.springframework.data.mongodb.repository.Query;
 
 /**
  * Repository interface for managing Freelancer entities in MongoDB.
@@ -36,4 +35,5 @@ public interface FreelancerRepository extends MongoRepository<Freelancer, String
      * @return The count of all freelancers
      */
     long count();
+
 }

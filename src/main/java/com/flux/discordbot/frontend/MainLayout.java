@@ -1,6 +1,9 @@
 package com.flux.discordbot.frontend;
 
+import com.flux.discordbot.frontend.tabs.CommissionsTab;
+import com.flux.discordbot.frontend.tabs.FreelancersTab;
 import com.flux.discordbot.frontend.tabs.PendingTab;
+import com.flux.discordbot.frontend.tabs.StatsTab;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.html.H1;
@@ -27,14 +30,16 @@ public class MainLayout extends AppLayout {
         final Tabs tabs = getTabs();
 
         addToDrawer(tabs);
-
         addToNavbar(title);
     }
 
     private Tabs getTabs() {
         final Tabs tabs = new Tabs();
         tabs.add(
-                createTab(VaadinIcon.TIMER, "Pending", PendingTab.class)
+                createTab(VaadinIcon.USERS, "Freelancers", FreelancersTab.class),
+                createTab(VaadinIcon.FOLDER, "Commissions", CommissionsTab.class),
+                createTab(VaadinIcon.TIMER, "Pending", PendingTab.class),
+                createTab(VaadinIcon.INFO, "Stats", StatsTab.class)
         );
         tabs.setOrientation(Tabs.Orientation.VERTICAL);
         return tabs;

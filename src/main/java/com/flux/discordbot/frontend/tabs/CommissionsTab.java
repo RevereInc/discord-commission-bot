@@ -15,27 +15,27 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import org.springframework.beans.factory.annotation.Autowired;
 
-@PageTitle("Pending | Flux Solutions")
-@Route(value = "pending", layout = MainLayout.class)
-public class PendingTab extends VerticalLayout {
+@PageTitle("Commissions | Flux Solutions")
+@Route(value = "commissions", layout = MainLayout.class)
+public class CommissionsTab extends VerticalLayout {
 
     private final CommissionRepository m_commissionRepository;
     private final Grid<Commission> m_commissionGrid;
 
-    public PendingTab(@Autowired CommissionRepository p_commissionRepository) {
+    public CommissionsTab(@Autowired CommissionRepository p_commissionRepository) {
         m_commissionRepository = p_commissionRepository;
 
         m_commissionGrid = new Grid<>(Commission.class, false);
         m_commissionGrid.appendHeaderRow();
 
-        final GridListDataView<Commission> dataView = m_commissionGrid
-                .setItems(m_commissionRepository.findAll()); // TODO: filter through commissions that are pending
+        final GridListDataView<Commission> dataView = m_commissionGrid.setItems(m_commissionRepository.findAll());
 
         // Set height and add columns
         m_commissionGrid.setHeight(80F, Unit.VH);
         m_commissionGrid.addColumn(Commission::getFreelancer).setHeader("Freelancer");
         m_commissionGrid.addColumn(Commission::getQuote).setHeader("Quote");
         m_commissionGrid.addColumn(Commission::getDescription).setHeader("Description");
+        m_commissionGrid.addColumn(Commission::getState).setHeader("State");
 
         // Add search bar
         TextField searchField = new TextField();
