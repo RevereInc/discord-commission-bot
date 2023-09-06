@@ -1,6 +1,9 @@
 package com.flux.discordbot.services;
 
+import com.flux.discordbot.frontend.MainLayout;
+import com.flux.discordbot.frontend.views.PendingCommissionsView;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.server.VaadinSession;
 import org.springframework.stereotype.Service;
 
@@ -63,7 +66,8 @@ public class AuthServiceImpl implements AuthService {
     }
 
     private void createRoutes(Role p_role) {
-
+        p_role.getAuthorizedRoutes()
+                .forEach(p_authorizedRoute -> RouteConfiguration.forSessionScope().setRoute(p_authorizedRoute.route(), p_authorizedRoute.view(), MainLayout.class));
     }
 
     private String generateAuthToken() {
