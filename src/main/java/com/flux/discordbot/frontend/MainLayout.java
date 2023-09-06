@@ -117,30 +117,4 @@ public class MainLayout extends AppLayout {
     private String getCurrentPageTitle() {
         return getContent().getClass().getAnnotation(PageTitle.class).value();
     }
-
-    private Tabs getTabs() {
-        final Tabs tabs = new Tabs();
-        tabs.add(
-                createTab(VaadinIcon.USERS, "Freelancers", FreelancersTab.class),
-                createTab(VaadinIcon.FOLDER, "Commissions", CommissionsTab.class),
-                createTab(VaadinIcon.TIMER, "Pending", PendingTab.class),
-                createTab(VaadinIcon.INFO, "Stats", StatsTab.class)
-        );
-        tabs.setOrientation(Tabs.Orientation.VERTICAL);
-        return tabs;
-    }
-
-    private Tab createTab(final VaadinIcon p_viewIcon, final String p_viewName, final Class<? extends Component> p_viewClass) {
-        final Icon icon = p_viewIcon.create();
-        icon.getStyle().set("box-sizing", "border-box")
-                .set("margin-inline-end", "var(--lumo-space-m)")
-                .set("margin-inline-start", "var(--lumo-space-xs)");
-
-        final RouterLink link = new RouterLink();
-        link.add(icon, new Span(p_viewName));
-        link.setRoute(p_viewClass);
-        link.setTabIndex(-1);
-
-        return new Tab(link);
-    }
 }
