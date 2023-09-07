@@ -10,11 +10,14 @@ import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
+import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.H1;
+import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
+import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.tabs.Tab;
@@ -33,13 +36,12 @@ import java.util.Optional;
 @PreserveOnRefresh
 public class MainLayout extends AppLayout {
     private final Tabs m_menu;
-    private final H1 m_title;
+    private final H2 m_title;
     private final AuthService m_authService;
 
     public MainLayout(final AuthService p_authService) {
         m_authService = p_authService;
-        m_title = new H1();
-        m_title.getStyle().setMargin("1rem");
+        m_title = new H2();
 
         final String js = "document.documentElement.setAttribute('theme', $0)";
         getElement().executeJs(js, Lumo.DARK);
@@ -52,7 +54,13 @@ public class MainLayout extends AppLayout {
     }
 
     private Component createHeaderContent() {
-        HorizontalLayout layout = new HorizontalLayout();
+        final FlexLayout flexLayout = new FlexLayout();
+        flexLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
+        flexLayout.setAlignContent(FlexLayout.ContentAlignment.CENTER);
+        flexLayout.setWidthFull();
+        flexLayout.setHeightFull();
+
+        final HorizontalLayout layout = new HorizontalLayout();
         layout.setId("header");
         layout.getThemeList().set("dark", true);
         layout.setWidthFull();
@@ -60,7 +68,14 @@ public class MainLayout extends AppLayout {
         layout.setAlignItems(FlexComponent.Alignment.CENTER);
         layout.add(new DrawerToggle());
         layout.add(m_title);
-        return layout;
+
+        final Button logoutButton = new Button("Logout");
+        logoutButton.addClickListener(p_buttonClickEvent -> UI.getCurrent().navigate("/logout"));
+        logoutButton.getStyle().set("margin-right", "1rem");
+
+        flexLayout.add(layout, logoutButton);
+
+        return flexLayout;
     }
 
     private Component createDrawerContent(final Tabs p_menu) {
