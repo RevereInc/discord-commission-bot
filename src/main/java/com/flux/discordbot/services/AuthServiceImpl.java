@@ -1,10 +1,9 @@
 package com.flux.discordbot.services;
 
 import com.flux.discordbot.frontend.MainLayout;
-import com.flux.discordbot.frontend.views.PendingCommissionsView;
-import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.server.VaadinSession;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.Base64;
@@ -12,6 +11,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+@Slf4j
 @Service
 public class AuthServiceImpl implements AuthService {
     public record AuthKey(String key, long timestamp) {}
@@ -72,8 +72,11 @@ public class AuthServiceImpl implements AuthService {
 
     private String generateAuthToken() {
         final String rawToken = UUID.randomUUID() + "-" + UUID.randomUUID();
+        final String encodedToken = Base64.getEncoder().encodeToString(rawToken.getBytes());
 
-        return Base64.getEncoder().encodeToString(rawToken.getBytes());
+        log.info(encodedToken);
+
+        return encodedToken;
     }
 
     private void regenerateAuthToken(final Role p_role) {

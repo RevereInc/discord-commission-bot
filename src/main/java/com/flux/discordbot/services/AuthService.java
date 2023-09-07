@@ -1,8 +1,9 @@
 package com.flux.discordbot.services;
 
-import com.flux.discordbot.frontend.views.ActiveCommissionsView;
-import com.flux.discordbot.frontend.views.FinishedCommissionsView;
-import com.flux.discordbot.frontend.views.PendingCommissionsView;
+import com.flux.discordbot.frontend.tabs.CommissionsTab;
+import com.flux.discordbot.frontend.tabs.FreelancersTab;
+import com.flux.discordbot.frontend.tabs.PendingTab;
+import com.flux.discordbot.frontend.tabs.StatsTab;
 import com.vaadin.flow.component.Component;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -17,16 +18,18 @@ public interface AuthService {
     @Getter
     @AllArgsConstructor
     enum Role {
-        ADMIN(
-                List.of(
-                        new AuthorizedRoute("pending", "Pending Commissions", PendingCommissionsView.class)
-                )
-        ),
         SUPPORT(
                 List.of(
-                        new AuthorizedRoute("pending", "Pending Commissions", PendingCommissionsView.class),
-                        new AuthorizedRoute("active", "Active Commissions", ActiveCommissionsView.class),
-                        new AuthorizedRoute("finished", "Finished Commissions", FinishedCommissionsView.class)
+                        new AuthorizedRoute("stats", "Stats", StatsTab.class),
+                        new AuthorizedRoute("pending", "Pending Commissions", PendingTab.class)
+                )
+        ),
+        ADMIN(
+                List.of(
+                        new AuthorizedRoute("stats", "Stats", StatsTab.class),
+                        new AuthorizedRoute("pending", "Pending Commissions", PendingTab.class),
+                        new AuthorizedRoute("commissions", "Active Commissions", CommissionsTab.class),
+                        new AuthorizedRoute("freelancers", "Finished Commissions", FreelancersTab.class)
                 )
         );
 

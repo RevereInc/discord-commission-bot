@@ -7,6 +7,7 @@ import com.flux.discordbot.frontend.tabs.StatsTab;
 import com.flux.discordbot.services.AuthService;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
 import com.vaadin.flow.component.html.H1;
@@ -26,19 +27,19 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.theme.lumo.Lumo;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.util.Objects;
 import java.util.Optional;
 
-@org.springframework.stereotype.Component
 @PreserveOnRefresh
 public class MainLayout extends AppLayout {
     private final Tabs m_menu;
     private final H1 m_title;
     private final AuthService m_authService;
 
-    @Autowired
     public MainLayout(final AuthService p_authService) {
         m_authService = p_authService;
         m_title = new H1();
+        m_title.getStyle().setMargin("1rem");
 
         final String js = "document.documentElement.setAttribute('theme', $0)";
         getElement().executeJs(js, Lumo.DARK);
@@ -86,7 +87,13 @@ public class MainLayout extends AppLayout {
     }
 
     private Component[] createMenuItems() {
-        return VaadinSession.getCurrent().getAttribute(AuthService.Role.class)
+        final AuthService.Role role = VaadinSession.getCurrent().getAttribute(AuthService.Role.class);
+
+        if (role == null) {
+            return new Component[]{};
+        }
+
+        return role
                 .getAuthorizedRoutes()
                 .stream()
                 .map(p_route -> createTab(p_route.name(), p_route.view()))
@@ -107,10 +114,10 @@ public class MainLayout extends AppLayout {
         m_title.setText(getCurrentPageTitle());
     }
 
-    private Optional<Tab> getTabForComponent(Component component) {
+    private Optional<Tab> getTabForComponent(final Component p_component) {
         return m_menu.getChildren()
                 .filter(p_tab -> ComponentUtil.getData(p_tab, Class.class)
-                        .equals(component.getClass()))
+                        .equals(p_component.getClass()))
                 .findFirst().map(Tab.class::cast);
     }
 

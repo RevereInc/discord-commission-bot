@@ -1,8 +1,11 @@
 package com.flux.discordbot.frontend.tabs;
 
 import com.flux.discordbot.entities.Commission;
+import com.flux.discordbot.frontend.AuthCheck;
 import com.flux.discordbot.frontend.MainLayout;
 import com.flux.discordbot.repository.CommissionRepository;
+import com.flux.discordbot.services.AuthService;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.Unit;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.dataview.GridListDataView;
@@ -11,13 +14,15 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.value.ValueChangeMode;
-import com.vaadin.flow.router.PageTitle;
-import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.*;
+import com.vaadin.flow.server.VaadinSession;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.List;
 
 @PageTitle("Pending | Flux Solutions")
 @Route(value = "pending", layout = MainLayout.class)
-public class PendingTab extends VerticalLayout {
+public class PendingTab extends VerticalLayout implements AfterNavigationObserver {
 
     private final CommissionRepository m_commissionRepository;
     private final Grid<Commission> m_commissionGrid;
@@ -55,5 +60,10 @@ public class PendingTab extends VerticalLayout {
         });
 
         add(m_commissionGrid, searchField);
+    }
+
+    @Override
+    public void afterNavigation(final AfterNavigationEvent p_afterNavigationEvent) {
+        new AuthCheck().doAuthChecks(PendingTab.class);
     }
 }

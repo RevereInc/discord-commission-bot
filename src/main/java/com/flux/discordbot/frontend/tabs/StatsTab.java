@@ -1,21 +1,25 @@
 package com.flux.discordbot.frontend.tabs;
 
+import com.flux.discordbot.frontend.AuthCheck;
 import com.flux.discordbot.frontend.MainLayout;
 import com.flux.discordbot.frontend.components.Card;
 import com.flux.discordbot.repository.CommissionRepository;
 import com.flux.discordbot.repository.FreelancerRepository;
 import com.flux.discordbot.repository.ReviewRepository;
+import com.flux.discordbot.services.AuthService;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.H1;
-import com.vaadin.flow.router.PageTitle;
-import com.vaadin.flow.router.Route;
-import com.vaadin.flow.router.RouteAlias;
+import com.vaadin.flow.router.*;
+import com.vaadin.flow.server.VaadinSession;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.List;
 
 @PageTitle("Stats | Flux Solutions")
 @Route(value = "/stats", layout = MainLayout.class)
 @RouteAlias(value = "", layout = MainLayout.class)
-public class StatsTab extends FormLayout {
+public class StatsTab extends FormLayout implements AfterNavigationObserver {
 
     private final FreelancerRepository m_freelancerRepository;
     private final CommissionRepository m_commissionRepository;
@@ -48,5 +52,10 @@ public class StatsTab extends FormLayout {
         usersCard.addItemToContainer(p_value);
 
         return usersCard;
+    }
+
+    @Override
+    public void afterNavigation(final AfterNavigationEvent p_afterNavigationEvent) {
+        new AuthCheck().doAuthChecks(StatsTab.class);
     }
 }

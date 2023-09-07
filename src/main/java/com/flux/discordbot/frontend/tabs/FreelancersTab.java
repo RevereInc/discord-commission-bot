@@ -1,8 +1,11 @@
 package com.flux.discordbot.frontend.tabs;
 
 import com.flux.discordbot.entities.Freelancer;
+import com.flux.discordbot.frontend.AuthCheck;
 import com.flux.discordbot.frontend.MainLayout;
 import com.flux.discordbot.repository.FreelancerRepository;
+import com.flux.discordbot.services.AuthService;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.Unit;
 import com.vaadin.flow.component.grid.Grid;
 import com.vaadin.flow.component.grid.dataview.GridListDataView;
@@ -11,13 +14,13 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.value.ValueChangeMode;
-import com.vaadin.flow.router.PageTitle;
-import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.*;
+import com.vaadin.flow.server.VaadinSession;
 import org.springframework.beans.factory.annotation.Autowired;
 
 @PageTitle("Freelancers | Flux Solutions")
 @Route(value = "freelancers", layout = MainLayout.class)
-public class FreelancersTab extends VerticalLayout {
+public class FreelancersTab extends VerticalLayout implements AfterNavigationObserver {
 
     private final FreelancerRepository m_freelancerRepository;
     private final Grid<Freelancer> m_freelancerGrid;
@@ -54,5 +57,10 @@ public class FreelancersTab extends VerticalLayout {
         });
 
         add(m_freelancerGrid, searchField);
+    }
+
+    @Override
+    public void afterNavigation(final AfterNavigationEvent p_afterNavigationEvent) {
+        new AuthCheck().doAuthChecks(FreelancersTab.class);
     }
 }
