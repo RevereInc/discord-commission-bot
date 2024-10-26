@@ -1,5 +1,6 @@
 package dev.revere.commission.discord.utility;
 
+import dev.revere.commission.entities.Department;
 import net.dv8tion.jda.api.entities.Member;
 
 import java.util.HashMap;
@@ -11,13 +12,13 @@ import java.util.Map;
  * @date 8/27/2023
  */
 public final class CommissionData {
-    private static final Map<Member, String> selectedUserCategory = new HashMap<>();
+    private static final Map<Member, Department> selectedUserCategory = new HashMap<>();
 
-    public static void setSelectedCategory(final Member member, final String category) {
+    public static void setSelectedCategory(final Member member, final Department category) {
         selectedUserCategory.put(member, category);
     }
 
-    public static String getSelectedCategory(final Member member) {
+    public static Department getSelectedCategory(final Member member) {
         return selectedUserCategory.get(member);
     }
 

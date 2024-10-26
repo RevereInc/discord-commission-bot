@@ -5,6 +5,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.io.Serializable;
+import java.util.HashMap;
 
 /**
  * Represents a commission entity stored in a MongoDB collection.
@@ -27,6 +28,9 @@ public class Commission implements Serializable {
     // The ID of the user associated with the commission
     private long userId;
 
+    // The username of the user associated with the commission
+    private String client;
+
     // The category of the commission
     private String category;
 
@@ -48,27 +52,43 @@ public class Commission implements Serializable {
     // The channel ID where the commission is being handled
     private long publicChannelId;
 
+    // The list of freelancers interested in the commission
+    private HashMap<Long, String> interestedFreelancers;
+
+    // The list of freelancers who have been declined for the commission
+    private HashMap<Long, String> declinedFreelancers;
+
     // Mark the commission as finished
     private State state;
 
     // Check if the payment is still pending
     private boolean paymentPending;
 
+    public String getFormattedQuote() {
+        return "$" + String.format("%.2f", Double.parseDouble(quote));
+    }
+
     @Override
     public String toString() {
         return "Commission{" +
                 "id='" + id + '\'' +
                 ", userId=" + userId +
+                ", username='" + client + '\'' +
                 ", category='" + category + '\'' +
                 ", quote='" + quote + '\'' +
                 ", description='" + description + '\'' +
                 ", freelancer='" + freelancer + '\'' +
-                ", approvedFreelancerId=" + freelancerId +
+                ", freelancerId=" + freelancerId +
                 ", channelId=" + channelId +
+                ", publicChannelId=" + publicChannelId +
+                ", interestedFreelancers=" + interestedFreelancers +
+                ", declinedFreelancers=" + declinedFreelancers +
+                ", state=" + state +
+                ", paymentPending=" + paymentPending +
                 '}';
     }
 
     public enum State implements Serializable {
-        COMPLETED, IN_PROGRESS, PENDING;
+        COMPLETED, IN_PROGRESS, PENDING, CANCELLED;
     }
 }

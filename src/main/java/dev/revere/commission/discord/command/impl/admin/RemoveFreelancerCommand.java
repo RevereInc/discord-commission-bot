@@ -1,22 +1,21 @@
-package dev.revere.commission.discord.command.impl;
+package dev.revere.commission.discord.command.impl.admin;
 
-import dev.revere.commission.discord.JDAInitializer;
-import dev.revere.commission.discord.utility.FluxEmbedBuilder;
+import dev.revere.commission.Constants;
+import dev.revere.commission.discord.utility.TonicEmbedBuilder;
 import dev.revere.commission.entities.Department;
 import dev.revere.commission.entities.Freelancer;
 import dev.revere.commission.repository.FreelancerRepository;
 import com.jagrosh.jdautilities.command.SlashCommand;
 import com.jagrosh.jdautilities.command.SlashCommandEvent;
 import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
-import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -54,33 +53,36 @@ public class RemoveFreelancerCommand extends SlashCommand {
 
         Freelancer freelancer = m_freelancerRepository.findFreelancerByUserId(user.getIdLong());
         if (freelancer == null) {
-            p_slashCommandEvent.reply("This freelancer does not exist").queue();
+            p_slashCommandEvent.reply(TonicEmbedBuilder.sharedMessageEmbed("This freelancer does not exist")).queue();
             return;
+        }
+
+        Guild mainGuild = p_slashCommandEvent.getJDA().getGuildById(Constants.MAIN_GUILD_ID);
+        Guild commissionGuild = p_slashCommandEvent.getJDA().getGuildById(Constants.COMMISSION_GUILD_ID);
+        if (mainGuild == null || commissionGuild == null) {
+            p_slashCommandEvent.reply(TonicEmbedBuilder.sharedMessageEmbed("Could not find guilds")).queue();
+            return;
+        }
+
+        Role globalRole = Objects.requireNonNull(p_slashCommandEvent.getJDA().getRoleById(Constants.GLOBAL_FREELANCER_ROLE_ID));
+        if (mainGuild.getMember(user) != null) {
+            mainGuild.removeRoleFromMember(user, globalRole).queue();
         }
 
         for (Department department : freelancer.getDepartments()) {
             Role mainRole = Objects.requireNonNull(p_slashCommandEvent.getJDA().getRoleById(department.getMainGuildRoleId()));
             Role commissionRole = Objects.requireNonNull(p_slashCommandEvent.getJDA().getRoleById(department.getCommissionGuildRoleId()));
 
-            Objects.requireNonNull(p_slashCommandEvent.getJDA().getGuildById(JDAInitializer.mainGuildID)).removeRoleFromMember(user, mainRole).queue();
-            Objects.requireNonNull(p_slashCommandEvent.getJDA().getGuildById(JDAInitializer.commissionGuildID)).removeRoleFromMember(user, commissionRole).queue();
+            if (commissionGuild.getMember(user) != null) {
+                commissionGuild.removeRoleFromMember(user, commissionRole).queue();
+            }
+
+            if (mainGuild.getMember(user) != null) {
+                mainGuild.removeRoleFromMember(user, mainRole).queue();
+            }
         }
 
         m_freelancerRepository.delete(freelancer);
-        p_slashCommandEvent.reply(deletedFreelancer(user.getName())).setEphemeral(false).queue();
-    }
-
-    /**
-     * Create and configure the deleted freelancer message.
-     *
-     * @return MessageCreateData containing the support embed.
-     */
-    public MessageCreateData deletedFreelancer(String name) {
-        return new FluxEmbedBuilder()
-                .setTitle("Freelancer | Flux Solutions")
-                .setDescription(name + " has successfully been removed from the team")
-                .setTimeStamp(Instant.now())
-                .setColor(-1)
-                .build();
+        p_slashCommandEvent.reply(TonicEmbedBuilder.sharedMessageEmbed("Successfully removed " + user.getName() + " from the freelance team!")).setEphemeral(false).queue();
     }
 }

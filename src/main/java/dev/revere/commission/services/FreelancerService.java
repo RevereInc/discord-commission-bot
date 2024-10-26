@@ -23,6 +23,14 @@ public interface FreelancerService {
     void removeDepartment(Freelancer p_freelancer, Department p_department);
 
     /**
+     * Set the bio of a freelancer.
+     *
+     * @param p_freelancer The Freelancer object to which the bio is set.
+     * @param p_bio        The bio to set.
+     */
+    void setBio(Freelancer p_freelancer, String p_bio);
+
+    /**
      * Check if a freelancer has reached the maximum number of cards.
      *
      * @param p_freelancer The Freelancer object to check.

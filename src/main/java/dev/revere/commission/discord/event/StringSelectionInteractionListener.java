@@ -1,14 +1,20 @@
 package dev.revere.commission.discord.event;
 
-import lombok.AllArgsConstructor;
-
+import dev.revere.commission.Constants;
 import dev.revere.commission.discord.utility.CommissionData;
-import dev.revere.commission.discord.utility.FluxEmbedBuilder;
+import dev.revere.commission.discord.utility.TonicEmbedBuilder;
 import dev.revere.commission.entities.Commission;
 import dev.revere.commission.repository.CommissionRepository;
+import dev.revere.commission.repository.DepartmentRepository;
+import dev.revere.commission.repository.FreelancerRepository;
+import dev.revere.commission.services.CommissionService;
+import lombok.AllArgsConstructor;
 import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.channel.concrete.Category;
+import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.interaction.component.StringSelectInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -21,6 +27,7 @@ import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
+import java.awt.*;
 import java.time.Instant;
 import java.util.Objects;
 
@@ -33,6 +40,9 @@ import java.util.Objects;
 @Service
 public class StringSelectionInteractionListener extends ListenerAdapter {
     private final CommissionRepository m_commissionRepository;
+    private final DepartmentRepository m_departmentRepository;
+    private final FreelancerRepository m_freelancerRepository;
+    private final CommissionService m_commissionService;
 
     @Override
     public void onStringSelectInteraction(@NotNull final StringSelectInteractionEvent p_stringSelectInteractionEvent) {
@@ -42,90 +52,139 @@ public class StringSelectionInteractionListener extends ListenerAdapter {
         switch (stringInteraction) {
             case "commission-menu" -> {
                 String selectedCategory = p_stringSelectInteractionEvent.getValues().get(0);
+
                 TextInput description = TextInput.create("description", "Description", TextInputStyle.PARAGRAPH)
                         .setRequiredRange(1, 500)
+                        .setPlaceholder("Example: I need a logo for my business with a modern design.. PS: the more detail the better!")
                         .setRequired(true)
                         .build();
 
                 TextInput quote = TextInput.create("quote", "Quote", TextInputStyle.SHORT)
                         .setRequiredRange(1, 5)
-                        .setPlaceholder("Example: 50")
+                        .setPlaceholder("Example: $50")
                         .setRequired(true)
                         .build();
 
-                Modal modal = Modal.create("commission-model", selectedCategory).addComponents(ActionRow.of(description), ActionRow.of(quote)).build();
+                Modal modal = Modal.create("commission-model", selectedCategory)
+                        .addComponents(ActionRow.of(description), ActionRow.of(quote)).build();
 
-                // Store the selected category id for channel creation
-                CommissionData.setSelectedCategory(member, selectedCategory);
+                CommissionData.setSelectedCategory(member, m_departmentRepository.findDepartmentByName(selectedCategory));
                 p_stringSelectInteractionEvent.replyModal(modal).queue();
             }
 
             case "approve-freelancer" -> {
-                String selectedFreelancer = p_stringSelectInteractionEvent.getValues().get(0);
-                Member freelancerMember = p_stringSelectInteractionEvent.getGuild().getMemberById(selectedFreelancer);
+                String selectedFreelancerId = p_stringSelectInteractionEvent.getValues().get(0);
+                Member freelancerMember = p_stringSelectInteractionEvent.getGuild().getMemberById(selectedFreelancerId);
 
                 final long interactionChannelId = p_stringSelectInteractionEvent.getChannel().getIdLong();
-
-                final Commission commission = m_commissionRepository.findCommissionByChannelId(interactionChannelId);
-                commission.setFreelancerId(Long.parseLong(selectedFreelancer));
-
-                assert freelancerMember != null;
-                commission.setFreelancer(freelancerMember.getUser().getName());
-
-                m_commissionRepository.save(commission);
-
-                final String commissionId = commission.getId();
-
-                final String commissionDescription = commission.getDescription();
-                final String commissionQuote = commission.getQuote();
+                final Commission commission = m_commissionRepository.findCommissionByPublicChannelId(interactionChannelId);
 
                 if (freelancerMember == null) {
+                    commission.getInterestedFreelancers().remove(Long.parseLong(selectedFreelancerId));
+                    p_stringSelectInteractionEvent.getChannel().sendMessage("The selected freelancer does not exist").queue();
                     return;
                 }
 
-                // Move the channel to different category
-                String targetCategoryId = "1141427451457708112";
-                Category targetCategory = p_stringSelectInteractionEvent.getGuild().getCategoryById(targetCategoryId);
+                m_commissionService.approveFreelancer(commission, freelancerMember);
 
-                p_stringSelectInteractionEvent.getGuild().getTextChannelById(p_stringSelectInteractionEvent.getChannel().getId()).getManager().setParent(targetCategory).queue();
+                String targetCategoryId = "1299299754089385994";
+                Category targetCategory = p_stringSelectInteractionEvent.getJDA().getGuildById(Constants.COMMISSION_GUILD_ID).getCategoryById(targetCategoryId);
 
-                Objects.requireNonNull(p_stringSelectInteractionEvent.getJDA().getGuildById("1139719606186020904")).createTextChannel("commission-" + commissionId)
-                    .setParent(p_stringSelectInteractionEvent.getJDA().getCategoryById("1141428418328657930"))
-                    .queue(textChannel -> {
-                        textChannel.sendMessage(commissionEmbed(freelancerMember.getUser().getName(), commissionQuote, commissionDescription)).queue();
-                        commission.setPublicChannelId(textChannel.getIdLong());
-                        commission.setState(Commission.State.IN_PROGRESS);
-                        m_commissionRepository.save(commission);
-                        textChannel.upsertPermissionOverride(Objects.requireNonNull(textChannel.getGuild().getMemberById(commission.getUserId()))).setAllowed(Permission.VIEW_CHANNEL).queue();
-                        textChannel.upsertPermissionOverride(Objects.requireNonNull(textChannel.getGuild().getMemberById(commission.getFreelancerId()))).setAllowed(Permission.VIEW_CHANNEL).queue();
+                p_stringSelectInteractionEvent.getJDA().getGuildById(Constants.COMMISSION_GUILD_ID).getTextChannelById(commission.getChannelId()).getManager().setParent(targetCategory).queue();
+                p_stringSelectInteractionEvent.reply(approveEmbed(freelancerMember.getUser().getName())).setEphemeral(true)
+                        .queue(reply -> {
+                            TextChannel channel = Objects.requireNonNull(p_stringSelectInteractionEvent.getJDA().getGuildById(Constants.MAIN_GUILD_ID))
+                                    .getTextChannelById(commission.getPublicChannelId());
+
+                            assert channel != null;
+                            channel.upsertPermissionOverride(freelancerMember)
+                                    .setAllowed(Permission.VIEW_CHANNEL)
+                                    .queue();
+
+                            String message = String.format("Congratulations %s! You have been approved for this commission.", freelancerMember.getUser().getAsMention());
+                            channel.sendMessage(message).queue();
+                            channel.sendMessage(commissionEmbed(freelancerMember.getUser().getName(), commission.getDescription(), commission.getFormattedQuote())).queue();
+
+                        });
+            }
+
+            case "disapprove-freelancer" -> {
+                String selectedFreelancerId = p_stringSelectInteractionEvent.getValues().get(0);
+                User freelancerUser = p_stringSelectInteractionEvent.getJDA().getUserById(selectedFreelancerId);
+                Member freelancerMember = p_stringSelectInteractionEvent.getGuild().getMember(freelancerUser);
+                if (freelancerMember == null) {
+                    p_stringSelectInteractionEvent.getChannel().sendMessage("The selected freelancer does not exist").queue();
+                    return;
+                }
+
+                final long interactionChannelId = p_stringSelectInteractionEvent.getChannel().getIdLong();
+                final Commission commission = m_commissionRepository.findCommissionByPublicChannelId(interactionChannelId);
+
+                m_commissionService.declineFreelancer(commission, freelancerMember);
+
+                p_stringSelectInteractionEvent.reply("You have declined " + freelancerUser.getName() + " for the commission").queue();
+
+                Guild targetGuild = p_stringSelectInteractionEvent.getJDA().getGuildById(Constants.COMMISSION_GUILD_ID);
+                if (targetGuild == null) {
+                    p_stringSelectInteractionEvent.getChannel().sendMessage("Target guild not found.").queue();
+                    return;
+                }
+
+                TextChannel channel = targetGuild.getTextChannelById(commission.getChannelId());
+                if (channel == null) {
+                    p_stringSelectInteractionEvent.getChannel().sendMessage("Channel not found in the target guild.").queue();
+                    return;
+                }
+
+                Member freelancerCommissionMember = targetGuild.getMember(freelancerUser);
+                if (freelancerCommissionMember != null) {
+                    channel.upsertPermissionOverride(freelancerCommissionMember)
+                            .setDenied(Permission.VIEW_CHANNEL)
+                            .queue();
+                } else {
+                    p_stringSelectInteractionEvent.getChannel().sendMessage("The selected freelancer is not a member of the target guild.").queue();
+                }
+
+                freelancerUser.openPrivateChannel().queue(privateChannel -> {
+                    privateChannel.sendMessage(TonicEmbedBuilder.sharedMessageEmbed(p_stringSelectInteractionEvent.getUser().getName() + " has declined your commission request.")).queue();
                 });
-
-                p_stringSelectInteractionEvent.getChannel().sendMessage(approveEmbed(freelancerMember.getUser().getName())).queue();
             }
         }
     }
 
-    public MessageCreateData commissionEmbed(String p_member, String p_quote, String p_description) {
-        return new FluxEmbedBuilder()
-                .setTitle("Commission Accepted | Flux Solutions")
-                .setDescription(p_description)
-                .addField("Freelancer", p_member, false)
-                .addField("Quote", p_quote, false)
+    public MessageCreateData commissionEmbed(String p_member, String p_description, String p_quote) {
+        String description = String.format(
+                """
+                        This commission will now be handled by **%s**. Here are the details:
+                        ### <:RVC_Log:1299484630101262387> Commission Details
+                        %s
+                        ### <:RVC_Discount:1299484670098145341> Quoted Price
+                        ```
+                        %s
+                        ```""",
+                p_member,
+                p_description,
+                p_quote
+        );
+
+        return new TonicEmbedBuilder()
+                .setTitle(" ")
+                .setDescription(description)
                 .addButton(ButtonStyle.SUCCESS, "finish-commission", "Mark As Finished", Emoji.fromUnicode("U+1F3AB"))
                 .addButton(ButtonStyle.PRIMARY, "payment-finished", "Mark Payment As Received", Emoji.fromUnicode("U+1F3AB"))
                 .addButton(ButtonStyle.SECONDARY, "request-payment", "Request Payment", Emoji.fromUnicode("U+1F3AB"))
                 .addButton(ButtonStyle.DANGER, "cancel-ongoing-commission", "Cancel Commission", Emoji.fromUnicode("U+1F3AB"))
                 .setTimeStamp(Instant.now())
-                .setColor(-1)
+                .setColor(Color.decode("#2b2d31"))
                 .build();
     }
 
     public MessageCreateData approveEmbed(String p_member) {
-        return new FluxEmbedBuilder()
-                .setTitle("Commission | Flux Solutions")
-                .setDescription("An administrator has approved **" + p_member + "** for this commission.")
+        return new TonicEmbedBuilder()
+                .setTitle(" ")
+                .setDescription("You have approved " + p_member + " for the commission")
                 .setTimeStamp(Instant.now())
-                .setColor(-1)
+                .setColor(Color.decode("#2b2d31"))
                 .build();
     }
 }

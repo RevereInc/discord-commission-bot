@@ -22,32 +22,31 @@ public class ReviewServiceImpl implements ReviewService {
      */
     @Override
     public float averageRating(final Freelancer p_freelancer) {
-        // Retrieve all reviews for the given freelancer
         final List<Review> reviews = m_reviewRepository.findAllByFreelancer(p_freelancer);
 
-        // If no reviews are available, return -1
-        if (reviews.size() < 1) {
+        if (reviews.isEmpty()) {
             return -1;
         }
 
         final int amountOfReviews = reviews.size();
 
-        // Calculate the total sum of review ratings
         float reviewRatingSum = 0;
 
         for (final Review review : reviews) {
             reviewRatingSum += review.getRating();
         }
 
-        // Calculate and return the average rating
         return reviewRatingSum / amountOfReviews;
     }
 
     @Override
     public String parseRating(final float p_rating) {
-        if (Float.compare(p_rating, -1.0F) == 0) {
+        final int MAX_RATING = 6;
+
+        if (p_rating < 1.0F || p_rating > MAX_RATING) {
             return "No ratings";
         }
-        return String.valueOf(p_rating); // TODO: Make emoji parser
+
+        return "⭐".repeat((int) p_rating);
     }
 }

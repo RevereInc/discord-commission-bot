@@ -1,6 +1,6 @@
-package dev.revere.commission.discord.command.impl;
+package dev.revere.commission.discord.command.impl.moderation;
 
-import dev.revere.commission.discord.utility.FluxEmbedBuilder;
+import dev.revere.commission.discord.utility.TonicEmbedBuilder;
 import com.jagrosh.jdautilities.command.SlashCommand;
 import com.jagrosh.jdautilities.command.SlashCommandEvent;
 import net.dv8tion.jda.api.Permission;
@@ -10,6 +10,7 @@ import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 import org.springframework.stereotype.Service;
 
+import java.awt.*;
 import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
@@ -40,11 +41,11 @@ public class KickCommand extends SlashCommand {
     }
 
     public MessageCreateData successfulKickEmbed(String name) {
-        return new FluxEmbedBuilder()
-                .setTitle("Punishment | Flux Solutions")
+        return new TonicEmbedBuilder()
+                .setTitle(" ")
                 .setDescription(name + " has successfully been kicked")
                 .setTimeStamp(Instant.now())
-                .setColor(-1)
+                .setColor(Color.decode("#2b2d31"))
                 .build();
     }
 }

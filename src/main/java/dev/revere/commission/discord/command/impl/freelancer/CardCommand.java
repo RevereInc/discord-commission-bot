@@ -1,4 +1,4 @@
-package dev.revere.commission.discord.command.impl;
+package dev.revere.commission.discord.command.impl.freelancer;
 
 import dev.revere.commission.entities.Freelancer;
 import dev.revere.commission.entities.TitleDescription;
@@ -19,7 +19,6 @@ import java.util.List;
 public class CardCommand extends SlashCommand {
     @Autowired
     public CardCommand(final FreelancerRepository p_freelancerRepository, final FreelancerService p_freelancerService) {
-
         this.name = "card";
         this.help = "Manage your card displays";
         this.guildOnly = true;
@@ -65,8 +64,6 @@ public class CardCommand extends SlashCommand {
                 return;
             }
 
-//            p_slashCommandEvent.deferReply().queue();
-
             final TitleDescription titleDescription = new TitleDescription(title, description);
 
             m_freelancerService.addCard(freelancer, titleDescription);
@@ -104,7 +101,6 @@ public class CardCommand extends SlashCommand {
             }
 
             final Freelancer freelancer = m_freelancerRepository.findFreelancerByUserId(user.getIdLong());
-
             final TitleDescription titleDescription = m_freelancerService.removeCard(freelancer, index);
 
             if (titleDescription == null) {

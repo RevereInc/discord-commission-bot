@@ -1,8 +1,8 @@
-package dev.revere.commission.discord.command.impl;
+package dev.revere.commission.discord.command.impl.admin;
 
 import com.jagrosh.jdautilities.command.SlashCommand;
 import com.jagrosh.jdautilities.command.SlashCommandEvent;
-import dev.revere.commission.discord.JDAInitializer;
+import dev.revere.commission.Constants;
 import dev.revere.commission.entities.Department;
 import dev.revere.commission.repository.DepartmentRepository;
 import dev.revere.commission.services.DepartmentService;
@@ -63,7 +63,7 @@ public class CreateDepartmentCommand extends SlashCommand {
     }
 
     private void createRolesAndPermissions(JDA jda, String departmentName, SlashCommandInteractionEvent event) {
-        Guild mainGuild = jda.getGuildById(JDAInitializer.mainGuildID);
+        Guild mainGuild = jda.getGuildById(Constants.MAIN_GUILD_ID);
 
         if (mainGuild == null) {
             event.reply("Failed to get main guild.").queue();
@@ -74,7 +74,7 @@ public class CreateDepartmentCommand extends SlashCommand {
                 .setName(departmentName)
                 .setPermissions(Permission.VIEW_CHANNEL, Permission.MESSAGE_SEND)
                 .queue(mainRole -> {
-                    Guild commissionGuild = mainGuild.getJDA().getGuildById(JDAInitializer.commissionGuildID);
+                    Guild commissionGuild = mainGuild.getJDA().getGuildById(Constants.COMMISSION_GUILD_ID);
                     if (commissionGuild == null) {
                         event.reply("Failed to get commission guild.").queue();
                         return;

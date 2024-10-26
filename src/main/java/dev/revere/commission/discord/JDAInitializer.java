@@ -35,9 +35,6 @@ public class JDAInitializer implements CommandLineRunner {
     private final StringSelectionInteractionListener m_stringSelectionInteractionListener;
     private final CommandHandler m_commandHandler;
 
-    public static final long mainGuildID = 1299048436829655073L;
-    public static final long commissionGuildID = 1299043117474910229L;
-
     // A static instance of ShardManager for global access within the application
     @Getter
     private static ShardManager m_shardManager;

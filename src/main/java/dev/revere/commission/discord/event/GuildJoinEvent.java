@@ -1,14 +1,12 @@
 package dev.revere.commission.discord.event;
 
-import dev.revere.commission.discord.utility.FluxEmbedBuilder;
+import dev.revere.commission.Constants;
 
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.guild.member.GuildMemberJoinEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
-import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
@@ -20,32 +18,20 @@ public class GuildJoinEvent extends ListenerAdapter {
         // Get the newly joined member
         final Member member = event.getMember();
 
-        // Get the guild the member joined
-        final Guild guild = event.getGuild();
+        System.out.println("Member joined: " + member.getUser().getName());
 
-        Role role = event.getGuild().getRoleById("1140379900713369702");
-        if (role != null) {
-            event.getGuild().addRoleToMember(event.getMember(), role).queue();
-        } else {
-            System.out.println("Role not found");
+        // Get the guild the member joined
+        final Guild guild = event.getJDA().getGuildById(Constants.MAIN_GUILD_ID);
+        if (guild == null) {
+            System.out.println("Guild not found");
+            return;
         }
 
         // Retrieve the channel by its configuration value
-        TextChannel channel = guild.getJDA().getTextChannelById("1140420352451809421");
-
+        TextChannel channel = guild.getTextChannelById(Constants.WELCOME_CHANNEL_ID);
         if (channel != null) {
-            channel.sendMessage(welcomeEmbed(member, guild)).queue();
+            System.out.println("Welcome message sent to " + member.getUser().getName() + " in " + guild.getName() + "!");
+            channel.sendMessage("<:RVC_W1:1299490606179029106><:RVC_W2:1299490648415666269><:RVC_W3:1299490670356070431><:RVC_W4:1299490696138592370><:RVC_W5:1299490715411284039> to **@Tonic Consulting**, <@" + member.getUser().getId() + "> - you are the **" + guild.getMembers().size() + "th member **!").queue();
         }
-    }
-
-    public MessageCreateData welcomeEmbed(Member p_member, Guild p_guild) {
-        return new FluxEmbedBuilder()
-                .setTitle("Welcome " + p_member.getEffectiveName() + " (@" + p_member.getUser().getName() + ") to " + p_guild.getName())
-                .setDescription("Welcome to the official Hysteria Network discord server!" +
-                        "\n\nThis is a enlarging freelancing business which provides you with your needs!" +
-                        "\n\nWe are now at **" + p_guild.getMembers().size() + "** members!")
-                .setImage("https://cdn.discordapp.com/attachments/1140382016295149730/1141048428353294436/wCsYPzMWHRipAAAAABJRU5ErkJggg.png")
-                .setColor(-1)
-                .build();
     }
 }

@@ -14,7 +14,6 @@ import java.util.List;
  * @date 8/27/2023
  */
 public interface ReviewRepository extends MongoRepository<Review, String> {
-
     /**
      * Find a review by the reviewer's ID.
      *

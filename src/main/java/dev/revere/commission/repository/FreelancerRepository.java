@@ -12,7 +12,6 @@ import org.springframework.data.mongodb.repository.MongoRepository;
  * @date 8/27/2023
  */
 public interface FreelancerRepository extends MongoRepository<Freelancer, String> {
-
     /**
      * Find a freelancer by the user ID.
      *

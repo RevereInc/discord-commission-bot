@@ -1,21 +1,27 @@
 package dev.revere.commission.discord.event;
 
-import lombok.AllArgsConstructor;
-
+import dev.revere.commission.Constants;
 import dev.revere.commission.discord.utility.CommissionData;
-import dev.revere.commission.discord.utility.FluxEmbedBuilder;
+import dev.revere.commission.discord.utility.TonicEmbedBuilder;
 import dev.revere.commission.entities.Commission;
+import dev.revere.commission.entities.Department;
 import dev.revere.commission.repository.CommissionRepository;
+import dev.revere.commission.services.CommissionService;
+import lombok.AllArgsConstructor;
 import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
+import java.awt.*;
 import java.time.Instant;
+import java.util.Objects;
 
 /**
  * @author Revere Development
@@ -26,6 +32,7 @@ import java.time.Instant;
 @Service
 public class ModalSubmitEvent extends ListenerAdapter {
     private final CommissionRepository m_commissionRepository;
+    private final CommissionService m_commissionService;
 
     @Override
     public void onModalInteraction(@NotNull final ModalInteractionEvent p_modalInteractionEvent) {
@@ -36,71 +43,157 @@ public class ModalSubmitEvent extends ListenerAdapter {
             case "commission-model" -> {
                 assert member != null;
 
-                // Category ID
-                final String commissionData = CommissionData.getSelectedCategory(member);
+                final Department commissionData = CommissionData.getSelectedCategory(member);
+                if (commissionData == null) {
+                    p_modalInteractionEvent.reply("Please select a category").setEphemeral(true).queue();
+                    return;
+                }
 
-                if(p_modalInteractionEvent.getJDA().getCategoryById(commissionData) == null) {
+                if (p_modalInteractionEvent.getJDA().getCategoryById(commissionData.getCommissionGuildCategoryID()) == null) {
                     p_modalInteractionEvent.reply("The selected category does not exist").setEphemeral(true).queue();
                     return;
                 }
 
-                // Create a Commission instance
-                final Commission commission = new Commission();
-                commission.setUserId(member.getIdLong());
-                commission.setCategory(commissionData);
-                commission.setDescription(p_modalInteractionEvent.getValue("description").getAsString());
-                commission.setQuote(p_modalInteractionEvent.getValue("quote").getAsString());
-                commission.setPaymentPending(true);
-                commission.setState(Commission.State.PENDING);
+                String description = p_modalInteractionEvent.getValue("description").getAsString();
+                String quote = p_modalInteractionEvent.getValue("quote").getAsString();
 
-                p_modalInteractionEvent.getJDA().getGuildById("1141049396453187690").createTextChannel(member.getUser().getName()).setParent(p_modalInteractionEvent.getJDA().getCategoryById(commissionData)).queue(textChannel -> {
-                    textChannel.sendMessage(getCommissionEmbed(member.getUser().getName(), p_modalInteractionEvent.getValue("description").getAsString(), p_modalInteractionEvent.getValue("quote").getAsString())).queue();
-                    commission.setChannelId(textChannel.getIdLong());
-                    m_commissionRepository.save(commission);
-                });
+                if (description.isEmpty() || quote.isEmpty()) {
+                    p_modalInteractionEvent.reply(TonicEmbedBuilder.sharedMessageEmbed("Please fill out all fields")).setEphemeral(true).queue();
+                    return;
+                }
 
-                // Remove selected category
+                try {
+                    Double.parseDouble(quote);
+                } catch (NumberFormatException e) {
+                    p_modalInteractionEvent.reply(TonicEmbedBuilder.sharedMessageEmbed("Please enter a valid number for the quote")).setEphemeral(true).queue();
+                    return;
+                }
+
+                final Commission commission = m_commissionService.createCommission(member, commissionData.getName(), description, quote);
+
+                Objects.requireNonNull(p_modalInteractionEvent.getJDA().getGuildById(Constants.COMMISSION_GUILD_ID))
+                        .createTextChannel(member.getUser().getName())
+                        .setParent(p_modalInteractionEvent.getJDA().getCategoryById(commissionData.getCommissionGuildCategoryID()))
+                        .queue(textChannel -> {
+                            textChannel.sendMessage(getCommissionEmbed(member.getUser().getName(), commission.getDescription(), commission.getFormattedQuote())).queue();
+                            commission.setChannelId(textChannel.getIdLong());
+
+                            Objects.requireNonNull(p_modalInteractionEvent.getJDA().getGuildById(Constants.MAIN_GUILD_ID))
+                                    .createTextChannel(member.getUser().getName())
+                                    .setParent(p_modalInteractionEvent.getJDA().getCategoryById(commissionData.getMainGuildCategoryID()))
+                                    .queue(publicTextChannel -> {
+                                        publicTextChannel.sendMessage(getCustomerCommissionEmbed(commission.getDescription(), commission.getFormattedQuote())).queue();
+                                        commission.setPublicChannelId(publicTextChannel.getIdLong());
+                                        m_commissionRepository.save(commission);
+
+                                        p_modalInteractionEvent.reply(getSucceedCommissionCreation(commission.getPublicChannelId()))
+                                                .setEphemeral(true)
+                                                .queue();
+                                    });
+                        });
+
                 CommissionData.removeSelectedCategory(member);
-
-                p_modalInteractionEvent.reply(getSucceedCommissionCreation()).setEphemeral(true).queue();
             }
-            case "quote-model" -> {
-                p_modalInteractionEvent.getUser().openPrivateChannel().flatMap(channel -> channel.sendMessage(sendQuoteOffer("A freelancer has offered you a quote of $" + p_modalInteractionEvent.getValue("quote").getAsString()))).queue();
+            default -> {
+                if (modalId.startsWith("quote-model-")) {
+                    String commissionId = modalId.substring("quote-model-".length());
+
+                    final Commission commission = m_commissionRepository.findCommissionById(commissionId);
+                    final User user = p_modalInteractionEvent.getUser();
+
+                    String quote = p_modalInteractionEvent.getValue("quote").getAsString();
+                    String formattedQuote = "$" + String.format("%.2f", Double.parseDouble(quote));
+
+                    p_modalInteractionEvent.getJDA().getGuildById(Constants.MAIN_GUILD_ID)
+                            .getTextChannelById(commission.getPublicChannelId())
+                            .sendMessage(sendQuoteOffer(user, quote, formattedQuote))
+                            .queue();
+
+                    p_modalInteractionEvent.reply(TonicEmbedBuilder.sharedMessageEmbed("The new quote has been delivered to the client")).setEphemeral(true).queue();
+                }
             }
         }
     }
 
-    public MessageCreateData sendQuoteOffer(String message) {
-        return new FluxEmbedBuilder()
-                .setTitle("New Quote | Flux Solutions")
-                .setDescription(message)
+    public MessageCreateData sendQuoteOffer(User p_user, String p_quote, String p_formattedQuote) {
+        String description = String.format(
+                """
+                        **%s** has sent a new quote for the commission.
+                        ### <:RVC_Discount:1299484670098145341> New Quoted Price
+                        ```
+                        %s
+                        ```""",
+                p_user.getName(),
+                p_formattedQuote
+        );
+
+        return new TonicEmbedBuilder()
+                .setTitle(" ")
+                .setDescription(description)
                 .setTimeStamp(Instant.now())
-                .setColor(-1)
-                .addButton(ButtonStyle.SUCCESS, "accept-quote", "Accept Quote", Emoji.fromUnicode("U+1F3AB"))
-                .addButton(ButtonStyle.DANGER, "decline-quote", "Decline Quote", Emoji.fromUnicode("U+1F3AB"))
+                .setColor(Color.decode("#2b2d31"))
+                .addButton(ButtonStyle.SUCCESS, "accept-quote-" + p_user.getId() + "-" + p_quote, "Accept Quote", Emoji.fromUnicode("U+1F3AB"))
+                .addButton(ButtonStyle.DANGER, "decline-quote-" + p_user.getId(), "Decline Quote", Emoji.fromUnicode("U+1F3AB"))
+                .build();
+    }
+
+    public MessageCreateData getCustomerCommissionEmbed(final String p_description, final String p_value) {
+        String description = String.format(
+                """
+                        Your commission request to **%s** has been received. This is an automated message. Please wait for a response from one of our freelancers.
+                        ### <:RVC_Log:1299484630101262387> Commission Details
+                        %s
+                        ### <:RVC_Discount:1299484670098145341> Quoted Price
+                        ```
+                        %s
+                        ```""",
+                Constants.PROJECT_NAME,
+                p_description,
+                p_value
+        );
+
+        return new TonicEmbedBuilder()
+                .setTitle(" ")
+                .setDescription(description)
+                .addButton(ButtonStyle.SECONDARY, "revoke-commission", "Revoke Commission", Emoji.fromUnicode("U+1F3AB"))
+                .setTimeStamp(Instant.now())
+                .setColor(Color.decode("#2b2d31"))
                 .build();
     }
 
     public MessageCreateData getCommissionEmbed(final String p_user, final String p_description, final String p_value) {
-        return new FluxEmbedBuilder()
-                .setTitle("New commission from " + p_user + " | Flux Solutions")
-                .setDescription(p_description)
-                .addField("Quote", p_value, false)
+        String description = String.format(
+                """
+                        A new commission request has been received from **%s**.
+                        ### <:RVC_Log:1299484630101262387> Commission Details
+                        %s
+                        ### <:RVC_Discount:1299484670098145341> Quoted Price
+                        ```
+                        %s
+                        ```""",
+                p_user,
+                p_description,
+                p_value
+        );
+
+        return new TonicEmbedBuilder()
+                .setTitle(" ")
+                .setDescription(description)
                 .setTimeStamp(Instant.now())
-                .setColor(-1)
+                .setColor(Color.decode("#2b2d31"))
                 .addButton(ButtonStyle.SUCCESS, "accept-commission", "Accept Commission", Emoji.fromUnicode("U+1F3AB"))
-                .addButton(ButtonStyle.PRIMARY, "deny-commission", "Deny Commission", Emoji.fromUnicode("U+1F3AB"))
-                .addButton(ButtonStyle.SECONDARY, "quote-commission", "Send a quote", Emoji.fromUnicode("U+1F3AB"))
-                .addButton(ButtonStyle.DANGER, "delete-commission", "Delete Commission", Emoji.fromUnicode("U+1F3AB"))
+                .addButton(ButtonStyle.SECONDARY, "quote-commission", "Offer a new quote", Emoji.fromUnicode("U+1F4B0"))
+                .addButton(ButtonStyle.DANGER, "deny-commission", "Decline Commission", Emoji.fromUnicode("U+1F6AB"))
+                .addButton(ButtonStyle.DANGER, "delete-commission", "Delete Commission", Emoji.fromUnicode("U+1F6AB"))
                 .build();
     }
 
-    public MessageCreateData getSucceedCommissionCreation() {
-        return new FluxEmbedBuilder()
-                .setTitle("Commission Creation | Flux Solutions")
-                .setDescription("Your request has been successfully submitted to our freelancers. Once your request is accepted, a dedicated channel will be created with the assigned freelancer.")
+    public MessageCreateData getSucceedCommissionCreation(long channelId) {
+        return new TonicEmbedBuilder()
+                .setTitle(" ")
+                .setDescription("Your commission has been successfully created and sent to our freelancers. Please find your commission request in <#" + channelId + ">.")
                 .setTimeStamp(Instant.now())
-                .setColor(-1)
+                .setColor(Color.decode("#2b2d31"))
                 .build();
     }
 }

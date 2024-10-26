@@ -1,89 +1,76 @@
 package dev.revere.commission.services.impl;
 
-import dev.revere.commission.frontend.MainLayout;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.server.VaadinSession;
+import dev.revere.commission.entities.Account;
+import dev.revere.commission.frontend.MainLayout;
+import dev.revere.commission.repository.AccountRepository;
 import dev.revere.commission.services.AuthService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
 
 @Slf4j
 @Service
 public class AuthServiceImpl implements AuthService {
-    public record AuthKey(String key, long timestamp) {}
-    private final Map<Role, AuthKey> m_authKeyMap;
+    private final AccountRepository m_accountRepository;
+    private final PasswordEncoder m_passwordEncoder;
 
-    public AuthServiceImpl() {
-        m_authKeyMap = new HashMap<>();
-
-        for (final Role p_role : Role.values()) {
-            m_authKeyMap.put(p_role, new AuthKey(generateAuthToken(), System.currentTimeMillis()));
-        }
+    public AuthServiceImpl(AccountRepository p_accountRepository) {
+        m_accountRepository = p_accountRepository;
+        m_passwordEncoder = new BCryptPasswordEncoder();
     }
 
     @Override
-    public String getAuthToken(final Role p_role) {
-        if (!m_authKeyMap.containsKey(p_role)) {
-            regenerateAuthToken(p_role);
-            return getAuthToken(p_role);
+    public void createAccount(String p_username, String p_password, Role p_role) {
+        if (m_accountRepository.findByUsername(p_username).isPresent()) {
+            log.warn("Account with username {} already exists", p_username);
+            return;
         }
 
-        final long currentTime = System.currentTimeMillis();
-        final AuthKey authKey = m_authKeyMap.get(p_role);
+        Account account = new Account();
+        account.setUsername(p_username);
+        account.setPassword(m_passwordEncoder.encode(p_password));
+        account.setRole(p_role);
 
-        if (currentTime > authKey.timestamp + (24 * 60 * 60 * 1000)) {
-            regenerateAuthToken(p_role);
-            return getAuthToken(p_role);
+        m_accountRepository.save(account);
+    }
+
+    @Override
+    public void login(String p_username, String p_password) throws AuthException {
+        Account account = m_accountRepository.findByUsername(p_username).orElseThrow(() -> new AuthException("Invalid username or password"));
+
+        if (!m_passwordEncoder.matches(p_password, account.getPassword())) {
+            throw new AuthException("Invalid username or password");
         }
 
-        return authKey.key;
+        VaadinSession.getCurrent().setAttribute(Role.class, account.getRole());
+        createRoutes(account.getRole());
+
+        UI.getCurrent().navigate("dashboard");
+    }
+
+    @Override
+    public void logout() {
+        VaadinSession.getCurrent().close();
+        UI.getCurrent().navigate("login");
     }
 
     @Override
     public boolean isAuthorized() {
-        final Role role = VaadinSession.getCurrent().getAttribute(Role.class);
-
-        return role == null;
-    }
-
-    @Override
-    public void authenticate(final String p_authKey) throws AuthException {
-        for (final Map.Entry<Role, AuthKey> roleAuthKeyEntry : m_authKeyMap.entrySet()) {
-            final Role role = roleAuthKeyEntry.getKey();
-
-            if (getAuthToken(role).equals(p_authKey)) {
-                VaadinSession.getCurrent().setAttribute(Role.class, role);
-                createRoutes(role);
-                return;
-            }
-        }
-
-        throw new AuthException();
+        return VaadinSession.getCurrent().getAttribute(Role.class) != null;
     }
 
     private void createRoutes(Role p_role) {
+        RouteConfiguration configuration = RouteConfiguration.forSessionScope();
+
+        configuration.getAvailableRoutes().forEach(p_route -> configuration.removeRoute(p_route.getNavigationTarget()));
+
         p_role.getAuthorizedRoutes()
-                .forEach(p_authorizedRoute -> RouteConfiguration.forSessionScope().setRoute(p_authorizedRoute.route(), p_authorizedRoute.view(), MainLayout.class));
-    }
-
-    private String generateAuthToken() {
-        final String rawToken = UUID.randomUUID() + "-" + UUID.randomUUID();
-        final String encodedToken = Base64.getEncoder().encodeToString(rawToken.getBytes());
-
-        log.info(encodedToken);
-
-        return encodedToken;
-    }
-
-    private void regenerateAuthToken(final Role p_role) {
-        final String authToken = generateAuthToken();
-        final AuthKey authKey = new AuthKey(authToken, System.currentTimeMillis());
-
-        m_authKeyMap.put(p_role, authKey);
+                .forEach(p_authorizedRoute -> configuration.setRoute(p_authorizedRoute.route(),
+                        p_authorizedRoute.view(),
+                        MainLayout.class));
     }
 }

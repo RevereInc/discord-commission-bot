@@ -10,5 +10,12 @@ public interface ReviewService {
      * @return The average rating as a floating-point number.
      */
     float averageRating(final Freelancer p_freelancer);
+
+    /**
+     * Parse the rating to a string.
+     *
+     * @param p_rating The rating to be parsed.
+     * @return The rating as a string.
+     */
     String parseRating(final float p_rating);
 }

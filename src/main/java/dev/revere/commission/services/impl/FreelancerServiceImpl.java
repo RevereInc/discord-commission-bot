@@ -6,7 +6,6 @@ import dev.revere.commission.entities.TitleDescription;
 import dev.revere.commission.repository.FreelancerRepository;
 import dev.revere.commission.services.FreelancerService;
 import lombok.AllArgsConstructor;
-import net.dv8tion.jda.api.entities.Role;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -26,6 +25,10 @@ public class FreelancerServiceImpl implements FreelancerService {
      */
     @Override
     public void addDepartment(final Freelancer p_freelancer, final Department p_department) {
+        if (p_freelancer == null) {
+            throw new IllegalArgumentException("Freelancer cannot be null");
+        }
+
         List<Department> departments = p_freelancer.getDepartments();
         if (departments == null) {
             departments = new ArrayList<>();
@@ -43,12 +46,32 @@ public class FreelancerServiceImpl implements FreelancerService {
      */
     @Override
     public void removeDepartment(final Freelancer p_freelancer, final Department p_department) {
+        if (p_freelancer == null) {
+            throw new IllegalArgumentException("Freelancer cannot be null");
+        }
+
         List<Department> departments = p_freelancer.getDepartments();
         if (departments != null) {
             departments.remove(p_department);
             p_freelancer.setDepartments(departments);
             m_freelancerRepository.save(p_freelancer);
         }
+    }
+
+    /**
+     * Set the bio of a freelancer.
+     *
+     * @param p_freelancer The Freelancer object to which the bio is set.
+     * @param p_bio        The bio to set.
+     */
+    @Override
+    public void setBio(Freelancer p_freelancer, String p_bio) {
+        if (p_freelancer == null) {
+            throw new IllegalArgumentException("Freelancer cannot be null");
+        }
+
+        p_freelancer.setBio(p_bio);
+        m_freelancerRepository.save(p_freelancer);
     }
 
     /**
@@ -59,6 +82,10 @@ public class FreelancerServiceImpl implements FreelancerService {
      */
     @Override
     public boolean maxCards(final Freelancer p_freelancer) {
+        if (p_freelancer == null) {
+            throw new IllegalArgumentException("Freelancer cannot be null");
+        }
+
         if (p_freelancer.getTitleDescriptions() == null) {
             return false;
         }
@@ -68,11 +95,15 @@ public class FreelancerServiceImpl implements FreelancerService {
     /**
      * Add a card (TitleDescription) to a freelancer and update the database.
      *
-     * @param p_freelancer      The Freelancer object to which the card is added.
+     * @param p_freelancer       The Freelancer object to which the card is added.
      * @param p_titleDescription The TitleDescription object representing the card's details.
      */
     @Override
     public void addCard(final Freelancer p_freelancer, final TitleDescription p_titleDescription) {
+        if (p_freelancer == null) {
+            throw new IllegalArgumentException("Freelancer cannot be null");
+        }
+
         final List<TitleDescription> titleDescriptions = Objects.requireNonNullElse(p_freelancer.getTitleDescriptions(), new ArrayList<>());
         titleDescriptions.add(p_titleDescription);
 
@@ -90,6 +121,10 @@ public class FreelancerServiceImpl implements FreelancerService {
      */
     @Override
     public TitleDescription removeCard(final Freelancer p_freelancer, final int p_index) {
+        if (p_freelancer == null) {
+            throw new IllegalArgumentException("Freelancer cannot be null");
+        }
+
         if (p_freelancer.getTitleDescriptions().size() < p_index) {
             return null;
         }

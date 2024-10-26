@@ -1,9 +1,8 @@
-package dev.revere.commission.discord.command.impl;
+package dev.revere.commission.discord.command.impl.admin;
 
-import dev.revere.commission.discord.JDAInitializer;
+import dev.revere.commission.Constants;
 import dev.revere.commission.entities.Department;
 import dev.revere.commission.entities.Freelancer;
-import dev.revere.commission.repository.DepartmentRepository;
 import dev.revere.commission.repository.FreelancerRepository;
 import dev.revere.commission.services.DepartmentService;
 import dev.revere.commission.services.FreelancerService;
@@ -72,8 +71,8 @@ public class AddDepartmentCommand extends SlashCommand {
         Role mainRole = Objects.requireNonNull(p_slashCommandEvent.getJDA().getRoleById(department.getMainGuildRoleId()));
         Role commissionRole = Objects.requireNonNull(p_slashCommandEvent.getJDA().getRoleById(department.getCommissionGuildRoleId()));
 
-        Objects.requireNonNull(p_slashCommandEvent.getJDA().getGuildById(JDAInitializer.mainGuildID)).addRoleToMember(user, mainRole).queue();
-        Objects.requireNonNull(p_slashCommandEvent.getJDA().getGuildById(JDAInitializer.commissionGuildID)).addRoleToMember(user, commissionRole).queue();
+        Objects.requireNonNull(p_slashCommandEvent.getJDA().getGuildById(Constants.MAIN_GUILD_ID)).addRoleToMember(user, mainRole).queue();
+        Objects.requireNonNull(p_slashCommandEvent.getJDA().getGuildById(Constants.COMMISSION_GUILD_ID)).addRoleToMember(user, commissionRole).queue();
 
         p_slashCommandEvent.reply("Added `" + user.getName() + "` to the `" + department.getName() + "` department").queue();
     }

@@ -1,6 +1,7 @@
 package dev.revere.commission.repository;
 
 import dev.revere.commission.entities.Commission;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
 /**
@@ -12,6 +13,13 @@ import org.springframework.data.mongodb.repository.MongoRepository;
  * @date 8/27/2023
  */
 public interface CommissionRepository extends MongoRepository<Commission, String> {
+    /**
+     * Find a commission by the commission ID.
+     *
+     * @param id The ID of the commission.
+     * @return The Commission object associated with the given ID.
+     */
+    Commission findCommissionById(@NotNull String id);
 
     /**
      * Find a commission by the channel ID.
@@ -42,6 +50,5 @@ public interface CommissionRepository extends MongoRepository<Commission, String
      *
      * @return The count of all commissions
      */
-
     long count();
 }

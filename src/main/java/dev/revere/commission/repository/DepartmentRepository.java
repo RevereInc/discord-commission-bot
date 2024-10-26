@@ -17,7 +17,6 @@ import java.util.List;
  * @date 8/27/2023
  */
 public interface DepartmentRepository extends MongoRepository<Department, String> {
-
     /**
      * Find a department by the department name.
      *

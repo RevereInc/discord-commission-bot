@@ -1,6 +1,6 @@
 package dev.revere.commission.discord.command.impl;
 
-import dev.revere.commission.discord.utility.FluxEmbedBuilder;
+import dev.revere.commission.discord.utility.TonicEmbedBuilder;
 import dev.revere.commission.repository.CommissionRepository;
 import dev.revere.commission.repository.FreelancerRepository;
 import dev.revere.commission.repository.ReviewRepository;
@@ -11,17 +11,18 @@ import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.awt.*;
 import java.time.Instant;
 
 @Service
-public class FluxInfoCommand extends SlashCommand {
+public class TonicInfoCommand extends SlashCommand {
 
     private final CommissionRepository m_commissionRepository;
     private final FreelancerRepository m_freelancerRepository;
     private final ReviewRepository m_reviewRepository;
 
     @Autowired
-    public FluxInfoCommand(final CommissionRepository p_commissionRepository, final FreelancerRepository p_freelancerRepository, final ReviewRepository p_reviewRepository) {
+    public TonicInfoCommand(final CommissionRepository p_commissionRepository, final FreelancerRepository p_freelancerRepository, final ReviewRepository p_reviewRepository) {
         this.m_commissionRepository = p_commissionRepository;
         this.m_freelancerRepository = p_freelancerRepository;
         this.m_reviewRepository = p_reviewRepository;
@@ -40,13 +41,13 @@ public class FluxInfoCommand extends SlashCommand {
     }
 
     public MessageCreateData informationEmbed() {
-        return new FluxEmbedBuilder()
-                .setTitle("Information | Flux Solutions")
+        return new TonicEmbedBuilder()
+                .setTitle(" ")
                 .addField("Freelancers", String.valueOf(m_freelancerRepository.count()), false)
                 .addField("Commissions", String.valueOf(m_commissionRepository.count()), false)
                 .addField("Reviews", String.valueOf(m_reviewRepository.count()), false)
                 .setTimeStamp(Instant.now())
-                .setColor(-1)
+                .setColor(Color.decode("#2b2d31"))
                 .build();
     }
 }

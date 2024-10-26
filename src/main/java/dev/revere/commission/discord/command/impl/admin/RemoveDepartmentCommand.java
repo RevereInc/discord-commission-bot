@@ -1,4 +1,4 @@
-package dev.revere.commission.discord.command.impl;
+package dev.revere.commission.discord.command.impl.admin;
 
 import dev.revere.commission.entities.Department;
 import dev.revere.commission.entities.Freelancer;
