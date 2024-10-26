@@ -96,12 +96,18 @@ public class ModalSubmitEvent extends ListenerAdapter {
             }
             default -> {
                 if (modalId.startsWith("quote-model-")) {
-                    String commissionId = modalId.substring("quote-model-".length());
-
+                    final String commissionId = modalId.substring("quote-model-".length());
                     final Commission commission = m_commissionRepository.findCommissionById(commissionId);
                     final User user = p_modalInteractionEvent.getUser();
+                    final String quote = p_modalInteractionEvent.getValue("quote").getAsString();
 
-                    String quote = p_modalInteractionEvent.getValue("quote").getAsString();
+                    try {
+                        Double.parseDouble(quote);
+                    } catch (NumberFormatException e) {
+                        p_modalInteractionEvent.reply(TonicEmbedBuilder.sharedMessageEmbed("Please enter a valid number for the quote")).setEphemeral(true).queue();
+                        return;
+                    }
+
                     String formattedQuote = "$" + String.format("%.2f", Double.parseDouble(quote));
 
                     p_modalInteractionEvent.getJDA().getGuildById(Constants.MAIN_GUILD_ID)
