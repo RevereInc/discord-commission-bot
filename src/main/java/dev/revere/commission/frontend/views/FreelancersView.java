@@ -46,7 +46,7 @@ public class FreelancersView extends VerticalLayout {
                         .map(Department::getName)
                         .collect(Collectors.joining(", "))
         ).setHeader("Departments");
-        m_freelancerGrid.addColumn(Freelancer::getBio).setHeader("Bio");
+        m_freelancerGrid.addColumn(Freelancer::getPortfolio).setHeader("Portfolio");
 
         TextField searchField = new TextField();
         searchField.setWidth("50%");

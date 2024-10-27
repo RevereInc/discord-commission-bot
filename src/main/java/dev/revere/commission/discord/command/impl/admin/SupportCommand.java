@@ -44,10 +44,10 @@ public class SupportCommand extends SlashCommand {
         String description = String.format(
                 """
                         **Welcome to %s's Commission Channel!**
-                        If you need assistance or have questions regarding your commission requests, feel free to ask here. Our team is here to help you!  
-                        ### <:RVC_Cart:1299484525348388995> How to Create a Commission:
-                        - Click the button below to get started on your commission request.  
-                        - Our freelancers will assist you as soon as possible.  
+                        If you need assistance or have questions regarding your commission requests, feel free to ask here. Our team is here to help you!
+                        ### <:1270446417206312980:1299806078044868719> How to Create a Commission:
+                        - Click the button below to get started on your commission request.
+                        - Our freelancers will assist you as soon as possible.
                         """,
                 Constants.PROJECT_NAME
         );
@@ -57,7 +57,7 @@ public class SupportCommand extends SlashCommand {
                 .setDescription(description)
                 .setTimeStamp(Instant.now())
                 .setColor(Color.decode("#2b2d31"))
-                .addButton(ButtonStyle.PRIMARY, "create-commission", "Create A Commission", Emoji.fromFormatted("<:RVC_Cart:1299484525348388995>"))
+                .addButton(ButtonStyle.SECONDARY, "create-commission", "Create A Commission", Emoji.fromFormatted("<:1270446417206312980:1299806078044868719>"))
                 .build();
     }
 

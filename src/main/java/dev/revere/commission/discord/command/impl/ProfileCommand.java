@@ -51,10 +51,10 @@ public class ProfileCommand extends SlashCommand {
 
         if (!m_freelancerRepository.existsFreelancerByUserId(user.getIdLong())) {
             if (user == p_slashCommandEvent.getUser()) {
-                p_slashCommandEvent.reply("You are not currently a freelancer! Feel free to apply.").setEphemeral(true).queue();
+                p_slashCommandEvent.reply(TonicEmbedBuilder.sharedMessageEmbed("You are not currently a freelancer! Feel free to apply.")).setEphemeral(true).queue();
                 return;
             }
-            p_slashCommandEvent.reply("Could not find freelancer with name " + user.getName()).queue();
+            p_slashCommandEvent.reply(TonicEmbedBuilder.sharedMessageEmbed("Could not find freelancer with name " + user.getName())).queue();
             return;
         }
 
@@ -73,23 +73,23 @@ public class ProfileCommand extends SlashCommand {
 
         final String departmentNamesPretty = departmentNames.toString();
 
-        final String bio = freelancer.getBio() == null ? "No bio" : freelancer.getBio();
+        final String portfolio = freelancer.getPortfolio().isEmpty() ? "No portfolio" : freelancer.getPortfolio();
 
         final List<TitleDescription> titleDescriptionCards = freelancer.getTitleDescriptions();
 
         final String iconUrl = user.getAvatarUrl();
 
-        p_slashCommandEvent.reply(informationEmbed(name, prettyRating, departmentNamesPretty, bio, titleDescriptionCards, iconUrl)).queue();
+        p_slashCommandEvent.reply(informationEmbed(name, prettyRating, departmentNamesPretty, portfolio, titleDescriptionCards, iconUrl)).queue();
     }
 
     public MessageCreateData informationEmbed(final String p_member, final String p_rating, final String p_departmentNamesPretty,
-                                              final String p_bio, final List<TitleDescription> p_titleDescriptions, final String p_iconUrl) {
+                                              final String p_portfolio, final List<TitleDescription> p_titleDescriptions, final String p_iconUrl) {
         TonicEmbedBuilder tonicEmbedBuilder =  new TonicEmbedBuilder()
                 .setTitle(" ")
                 .setDescription("View **" + p_member + "'s** freelancer statistics")
                 .addField("Departments", p_departmentNamesPretty, false)
                 .addField("Rating", String.valueOf(p_rating), false)
-                .addField("Bio", p_bio, false)
+                .addField("Portfolio", p_portfolio, false)
                 .setTimeStamp(Instant.now())
                 .setColor(Color.decode("#2b2d31"))
                 .setThumbnail(p_iconUrl);

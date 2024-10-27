@@ -20,7 +20,6 @@ public final class Constants {
 
     public static final long GLOBAL_FREELANCER_ROLE_ID = 1282432859881345047L;
 
-
     public static final String TITLE_LOGIN = "Login | " + PROJECT_NAME;
     public static final String TITLE_LOGOUT = "Logout | " + PROJECT_NAME;
     public static final String TITLE_ACCOUNTS = "Accounts | " + PROJECT_NAME;

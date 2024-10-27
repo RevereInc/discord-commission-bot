@@ -68,6 +68,11 @@ public class Commission implements Serializable {
         return "$" + String.format("%.2f", Double.parseDouble(quote));
     }
 
+    private HashMap<Long, Long> clientMessages = new HashMap<>();
+    private HashMap<Long, Long> freelancerMessages = new HashMap<>();
+    private long initialClientMessageId;
+    private long initialFreelancerMessageId;
+
     @Override
     public String toString() {
         return "Commission{" +

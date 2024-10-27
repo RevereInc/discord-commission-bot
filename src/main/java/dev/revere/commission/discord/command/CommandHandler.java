@@ -3,7 +3,7 @@ package dev.revere.commission.discord.command;
 import dev.revere.commission.discord.command.impl.*;
 import dev.revere.commission.discord.command.impl.admin.*;
 import dev.revere.commission.discord.command.impl.freelancer.CardCommand;
-import dev.revere.commission.discord.command.impl.freelancer.SetBioCommand;
+import dev.revere.commission.discord.command.impl.freelancer.SetPortfolio;
 import dev.revere.commission.discord.command.impl.freelancer.SyncCommand;
 import dev.revere.commission.discord.command.impl.moderation.BanCommand;
 import dev.revere.commission.discord.command.impl.moderation.KickCommand;
@@ -25,7 +25,7 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class CommandHandler {
     private final SupportCommand m_supportCommand;
-    private final AddFreelancerCommand m_Add_freelancerCommand;
+    private final AddFreelancerCommand m_addFreelancerCommand;
     private final ProfileCommand m_profileCommand;
     private final AddDepartmentCommand m_addDepartmentCommand;
     private final BanCommand m_banCommand;
@@ -35,7 +35,7 @@ public class CommandHandler {
     private final DeleteDepartmentCommand m_deleteDepartmentCommand;
     private final CardCommand m_cardCommand;
     private final SyncCommand m_syncCommand;
-    private final SetBioCommand m_setBioCommand;
+    private final SetPortfolio m_setPortfolioCommand;
     private final CreateDepartmentCommand m_createDepartmentCommand;
     private final TonicInfoCommand m_tonicInfoCommand;
 
@@ -52,9 +52,9 @@ public class CommandHandler {
                 .setActivity(Activity.watching("booting up..."))
                 .addSlashCommands(
                         m_supportCommand, m_removeFreelancerCommand, m_createDepartmentCommand, m_tonicInfoCommand,
-                        m_Add_freelancerCommand, m_profileCommand, m_addDepartmentCommand,
+                        m_addFreelancerCommand, m_profileCommand, m_addDepartmentCommand,
                         m_banCommand, m_kickCommand, m_removeServiceCommand,
-                        m_cardCommand, m_syncCommand, m_setBioCommand, m_deleteDepartmentCommand
+                        m_cardCommand, m_syncCommand, m_setPortfolioCommand, m_deleteDepartmentCommand
                 )
                 .build();
     }

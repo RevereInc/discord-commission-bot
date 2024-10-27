@@ -1,5 +1,6 @@
 package dev.revere.commission.discord.command.impl.admin;
 
+import dev.revere.commission.discord.utility.TonicEmbedBuilder;
 import dev.revere.commission.entities.Department;
 import dev.revere.commission.entities.Freelancer;
 import dev.revere.commission.repository.FreelancerRepository;
@@ -48,7 +49,7 @@ public class RemoveDepartmentCommand extends SlashCommand {
         final Role role = p_slashCommandEvent.getOption("department").getAsRole();
 
         if (!m_freelancerRepository.existsFreelancerByUserId(user.getIdLong())) {
-            p_slashCommandEvent.reply("Could not find freelancer with name " + user.getName()).queue();
+            p_slashCommandEvent.reply(TonicEmbedBuilder.sharedMessageEmbed("Could not find freelancer with name " + user.getName())).queue();
             return;
         }
 
@@ -57,7 +58,7 @@ public class RemoveDepartmentCommand extends SlashCommand {
 
 
         if (!freelancer.getDepartments().contains(department)) {
-            p_slashCommandEvent.reply("You are not a part of this department").queue();
+            p_slashCommandEvent.reply(TonicEmbedBuilder.sharedMessageEmbed("You are not a part of this department")).queue();
             return;
         }
 
@@ -65,6 +66,6 @@ public class RemoveDepartmentCommand extends SlashCommand {
 
         p_slashCommandEvent.getGuild().removeRoleFromMember(user, role).queue();
 
-        p_slashCommandEvent.reply("Removed `" + user.getName() + "` from the `" + department.getName() + "` department").queue();
+        p_slashCommandEvent.reply(TonicEmbedBuilder.sharedMessageEmbed("Removed `" + user.getName() + "` from the `" + department.getName() + "` department")).queue();
     }
 }

@@ -155,9 +155,9 @@ public class CommissionServiceImpl implements CommissionService {
         String description = String.format(
                 """
                         This commission has been transcribed by %s.
-                        ### <:RVC_Log:1299484630101262387> Commission Details
+                        ### <:1270455353620041829:1299806081140133898> Commission Details
                         %s
-                        ### <:RVC_Discount:1299484670098145341> Quoted Price
+                        ### <:1270673327098167347:1299806215915700315> Quoted Price
                         ```
                         $%s
                         ```""",

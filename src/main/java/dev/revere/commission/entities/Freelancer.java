@@ -36,8 +36,8 @@ public class Freelancer implements Serializable {
     // List of departments the Freelancer is associated with
     private List<Department> departments;
 
-    // Biography or description of the Freelancer
-    private String bio;
+    // Portfolio of the Freelancer
+    private String portfolio;
 
     // List of title descriptions associated with the Freelancer
     private List<TitleDescription> titleDescriptions;

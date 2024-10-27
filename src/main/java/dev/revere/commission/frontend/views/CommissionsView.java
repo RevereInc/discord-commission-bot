@@ -63,9 +63,18 @@ public class CommissionsView extends VerticalLayout {
         m_commissionGrid.addColumn(Commission::getClient).setHeader("Client");
         m_commissionGrid.addColumn(Commission::getFreelancer).setHeader("Freelancer");
         m_commissionGrid.addColumn(Commission::getCategory).setHeader("Department");
-        m_commissionGrid.addColumn(Commission::getFormattedQuote).setHeader("Quote");
         m_commissionGrid.addColumn(Commission::getDescription).setHeader("Description");
-        m_commissionGrid.addColumn(commission -> commission.isPaymentPending() ? "Cancelled" : "Paid").setHeader("Payment");
+        m_commissionGrid.addColumn(Commission::getFormattedQuote).setHeader("Quote");
+        m_commissionGrid.addColumn(Commission::getState).setHeader("State");
+        m_commissionGrid.addColumn(commission -> {
+            if (commission.getState() == Commission.State.CANCELLED && commission.isPaymentPending()) {
+                return "Cancelled";
+            } else if (commission.isPaymentPending()) {
+                return "Unpaid";
+            } else {
+                return "Paid";
+            }
+        }).setHeader("Payment");
 
         updateGrid();
     }

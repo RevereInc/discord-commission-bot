@@ -1,6 +1,7 @@
 package dev.revere.commission.discord.command.impl.admin;
 
 import dev.revere.commission.Constants;
+import dev.revere.commission.discord.utility.TonicEmbedBuilder;
 import dev.revere.commission.entities.Department;
 import dev.revere.commission.entities.Freelancer;
 import dev.revere.commission.repository.FreelancerRepository;
@@ -49,7 +50,7 @@ public class AddDepartmentCommand extends SlashCommand {
         final Role role = p_slashCommandEvent.getOption("department").getAsRole();
 
         if (!m_freelancerRepository.existsFreelancerByUserId(user.getIdLong())) {
-            p_slashCommandEvent.reply("Could not find freelancer with name " + user.getName()).queue();
+            p_slashCommandEvent.reply(TonicEmbedBuilder.sharedMessageEmbed("Could not find freelancer with name " + user.getName())).queue();
             return;
         }
 
@@ -57,12 +58,12 @@ public class AddDepartmentCommand extends SlashCommand {
         final Department department = m_departmentService.getDepartmentFromRole(role);
 
         if (department == null) {
-            p_slashCommandEvent.reply("Could not find department with name " + role.getName()).queue();
+            p_slashCommandEvent.reply(TonicEmbedBuilder.sharedMessageEmbed("Could not find department with name " + role.getName())).queue();
             return;
         }
 
         if (freelancer.getDepartments().contains(department)) {
-            p_slashCommandEvent.reply("Freelancer already has department").queue();
+            p_slashCommandEvent.reply(TonicEmbedBuilder.sharedMessageEmbed("Freelancer already has department")).queue();
             return;
         }
 
@@ -74,6 +75,6 @@ public class AddDepartmentCommand extends SlashCommand {
         Objects.requireNonNull(p_slashCommandEvent.getJDA().getGuildById(Constants.MAIN_GUILD_ID)).addRoleToMember(user, mainRole).queue();
         Objects.requireNonNull(p_slashCommandEvent.getJDA().getGuildById(Constants.COMMISSION_GUILD_ID)).addRoleToMember(user, commissionRole).queue();
 
-        p_slashCommandEvent.reply("Added `" + user.getName() + "` to the `" + department.getName() + "` department").queue();
+        p_slashCommandEvent.reply(TonicEmbedBuilder.sharedMessageEmbed("Added `" + user.getName() + "` to the `" + department.getName() + "` department")).queue();
     }
 }

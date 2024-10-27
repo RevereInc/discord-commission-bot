@@ -20,21 +20,21 @@ import java.util.List;
  * @date 10/26/2024
  */
 @Service
-public class SetBioCommand extends SlashCommand {
+public class SetPortfolio extends SlashCommand {
     private final FreelancerRepository m_freelancerRepository;
     private final FreelancerService m_freelancerService;
 
     @Autowired
-    public SetBioCommand(final FreelancerRepository p_freelancerRepository, FreelancerService p_freelancerService) {
+    public SetPortfolio(final FreelancerRepository p_freelancerRepository, FreelancerService p_freelancerService) {
         m_freelancerRepository = p_freelancerRepository;
         m_freelancerService = p_freelancerService;
 
-        this.name = "setbio";
-        this.help = "Set your profile bio";
+        this.name = "setportfolio";
+        this.help = "Set your portfolio";
         this.guildOnly = true;
 
         this.options = List.of(
-                new OptionData(OptionType.STRING, "bio", "the bio to display on your profile").setRequired(true)
+                new OptionData(OptionType.STRING, "portfolio", "the portfolio to display on your profile").setRequired(true)
         );
     }
 
@@ -44,14 +44,14 @@ public class SetBioCommand extends SlashCommand {
 
         assert member != null;
         if (!m_freelancerRepository.existsFreelancerByUserId(member.getIdLong())) {
-            p_slashCommandEvent.reply("You are not currently a freelancer! Feel free to apply.").setEphemeral(true).queue();
+            p_slashCommandEvent.reply(TonicEmbedBuilder.sharedMessageEmbed("You are not currently a freelancer! Feel free to apply.")).setEphemeral(true).queue();
             return;
         }
 
         Freelancer freelancer = m_freelancerRepository.findFreelancerByUserId(member.getIdLong());
 
-        m_freelancerService.setBio(freelancer, p_slashCommandEvent.getOption("bio").getAsString());
+        m_freelancerService.setPortfolio(freelancer, p_slashCommandEvent.getOption("portfolio").getAsString());
 
-        p_slashCommandEvent.reply(TonicEmbedBuilder.sharedMessageEmbed("Successfully edited your bio")).setEphemeral(true).queue();
+        p_slashCommandEvent.reply(TonicEmbedBuilder.sharedMessageEmbed("Successfully edited your portfolio")).setEphemeral(true).queue();
     }
 }

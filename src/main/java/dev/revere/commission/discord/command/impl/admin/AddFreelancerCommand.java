@@ -86,14 +86,34 @@ public class AddFreelancerCommand extends SlashCommand {
         }
 
         if (commissionGuild.getMember(member.getUser()) == null) {
-            p_slashCommandEvent.reply(TonicEmbedBuilder.sharedMessageEmbed("User is not in the commission guild")).setEphemeral(true).queue();
-            return;
+            commissionGuild.getTextChannelById(1299825190385221652L).createInvite().setMaxAge(43200)
+                .setMaxUses(1)
+                .queue(invite -> {
+                    String inviteLink = invite.getUrl();
+                    member.getUser().openPrivateChannel().queue(privateChannel -> {
+                        String description = String.format(
+                                """
+                                        You have been invited to join **Tonic Consulting** as a freelancer.
+                                        Please click the link below to join the server.
+                                        ### <:1270446417206312980:1299806078044868719> Invite:
+                                        - [Click here to join the server](%s)
+                                        """,
+                                inviteLink
+                        );
+                        privateChannel.sendMessage(TonicEmbedBuilder.sharedMessageEmbed(description)).queue();
+                    }, throwable -> {
+                        p_slashCommandEvent.getChannel().sendMessage(member.getAsMention() + " You need to join the commission guild to be added as a freelancer. Please contact support for an invite.").queue();
+                        p_slashCommandEvent.reply(TonicEmbedBuilder.sharedMessageEmbed("User is not in the commission guild, and I couldn't DM them.")).setEphemeral(true).queue();
+                    });
+                }, throwable -> {
+                    p_slashCommandEvent.reply(TonicEmbedBuilder.sharedMessageEmbed("Could not create an invite link. Please try again later.")).setEphemeral(true).queue();
+                });
         }
 
         final Freelancer freelancer = new Freelancer();
         freelancer.setName(member.getUser().getName());
         freelancer.setUserId(member.getUser().getIdLong());
-        freelancer.setBio("");
+        freelancer.setPortfolio("");
 
         m_freelancerService.addDepartment(freelancer, department);
         m_freelancerRepository.save(freelancer);
@@ -104,7 +124,10 @@ public class AddFreelancerCommand extends SlashCommand {
 
         mainGuild.addRoleToMember(member, globalRole).queue();
         mainGuild.addRoleToMember(member, mainRole).queue();
-        commissionGuild.addRoleToMember(member, commissionRole).queue();
+
+        if (commissionGuild.getMember(member.getUser()) != null) {
+            commissionGuild.addRoleToMember(member, commissionRole).queue();
+        }
 
         p_slashCommandEvent.reply(createdFreelancer(freelancer.getName())).setEphemeral(false).queue();
     }

@@ -113,7 +113,7 @@ public class StringSelectionInteractionListener extends ListenerAdapter {
                 User freelancerUser = p_stringSelectInteractionEvent.getJDA().getUserById(selectedFreelancerId);
                 Member freelancerMember = p_stringSelectInteractionEvent.getGuild().getMember(freelancerUser);
                 if (freelancerMember == null) {
-                    p_stringSelectInteractionEvent.getChannel().sendMessage("The selected freelancer does not exist").queue();
+                    p_stringSelectInteractionEvent.getChannel().sendMessage(TonicEmbedBuilder.sharedMessageEmbed("The selected freelancer does not exist")).queue();
                     return;
                 }
 
@@ -122,17 +122,17 @@ public class StringSelectionInteractionListener extends ListenerAdapter {
 
                 m_commissionService.declineFreelancer(commission, freelancerMember);
 
-                p_stringSelectInteractionEvent.reply("You have declined " + freelancerUser.getName() + " for the commission").queue();
+                p_stringSelectInteractionEvent.reply(TonicEmbedBuilder.sharedMessageEmbed("You have declined " + freelancerUser.getName() + " for the commission")).queue();
 
                 Guild targetGuild = p_stringSelectInteractionEvent.getJDA().getGuildById(Constants.COMMISSION_GUILD_ID);
                 if (targetGuild == null) {
-                    p_stringSelectInteractionEvent.getChannel().sendMessage("Target guild not found.").queue();
+                    p_stringSelectInteractionEvent.getChannel().sendMessage(TonicEmbedBuilder.sharedMessageEmbed("Target guild not found.")).queue();
                     return;
                 }
 
                 TextChannel channel = targetGuild.getTextChannelById(commission.getChannelId());
                 if (channel == null) {
-                    p_stringSelectInteractionEvent.getChannel().sendMessage("Channel not found in the target guild.").queue();
+                    p_stringSelectInteractionEvent.getChannel().sendMessage(TonicEmbedBuilder.sharedMessageEmbed("Channel not found in the target guild.")).queue();
                     return;
                 }
 
@@ -156,9 +156,9 @@ public class StringSelectionInteractionListener extends ListenerAdapter {
         String description = String.format(
                 """
                         This commission will now be handled by **%s**. Here are the details:
-                        ### <:RVC_Log:1299484630101262387> Commission Details
+                        ### <:1270455353620041829:1299806081140133898> Commission Details
                         %s
-                        ### <:RVC_Discount:1299484670098145341> Quoted Price
+                        ### <:1270673327098167347:1299806215915700315> Quoted Price
                         ```
                         %s
                         ```""",

@@ -3,6 +3,7 @@ package dev.revere.commission.discord.command.impl.admin;
 import com.jagrosh.jdautilities.command.SlashCommand;
 import com.jagrosh.jdautilities.command.SlashCommandEvent;
 import dev.revere.commission.Constants;
+import dev.revere.commission.discord.utility.TonicEmbedBuilder;
 import dev.revere.commission.entities.Department;
 import dev.revere.commission.repository.DepartmentRepository;
 import dev.revere.commission.services.DepartmentService;
@@ -50,12 +51,12 @@ public class CreateDepartmentCommand extends SlashCommand {
         Guild guild = p_slashCommandEvent.getGuild();
 
         if (guild == null) {
-            p_slashCommandEvent.reply("This command must be run in a server.").setEphemeral(true).queue();
+            p_slashCommandEvent.reply(TonicEmbedBuilder.sharedMessageEmbed("This command must be run in a server.")).setEphemeral(true).queue();
             return;
         }
 
         if (m_departmentRepository.existsDepartmentByName(departmentName)) {
-            p_slashCommandEvent.reply("A department with the name `" + departmentName + "` already exists.").queue();
+            p_slashCommandEvent.reply(TonicEmbedBuilder.sharedMessageEmbed("A department with the name `" + departmentName + "` already exists.")).queue();
             return;
         }
 
@@ -66,7 +67,7 @@ public class CreateDepartmentCommand extends SlashCommand {
         Guild mainGuild = jda.getGuildById(Constants.MAIN_GUILD_ID);
 
         if (mainGuild == null) {
-            event.reply("Failed to get main guild.").queue();
+            event.reply(TonicEmbedBuilder.sharedMessageEmbed("Failed to get main guild.")).queue();
             return;
         }
 
@@ -76,7 +77,7 @@ public class CreateDepartmentCommand extends SlashCommand {
                 .queue(mainRole -> {
                     Guild commissionGuild = mainGuild.getJDA().getGuildById(Constants.COMMISSION_GUILD_ID);
                     if (commissionGuild == null) {
-                        event.reply("Failed to get commission guild.").queue();
+                        event.reply(TonicEmbedBuilder.sharedMessageEmbed("Failed to get commission guild.")).queue();
                         return;
                     }
 
@@ -108,18 +109,18 @@ public class CreateDepartmentCommand extends SlashCommand {
                                                                 department.setCommissionGuildCategoryID(categoryInCommissionGuild.getIdLong());
 
                                                                 m_departmentService.createDepartment(department);
-                                                                event.reply("Department `" + departmentName + "` has been created successfully.").queue();
+                                                                event.reply(TonicEmbedBuilder.sharedMessageEmbed("Department `" + departmentName + "` has been created successfully.")).queue();
                                                             }, failure -> {
-                                                                event.reply("Failed to set permissions in commission guild category: " + failure.getMessage()).queue();
+                                                                event.reply(TonicEmbedBuilder.sharedMessageEmbed("Failed to set permissions in commission guild category: " + failure.getMessage())).queue();
                                                             });
                                                 }, failure -> {
-                                                    event.reply("Failed to create category in commission guild: " + failure.getMessage()).queue();
+                                                    event.reply(TonicEmbedBuilder.sharedMessageEmbed("Failed to create category in commission guild: " + failure.getMessage())).queue();
                                                 });
                                             }, mainFailure -> {
-                                                event.reply("Failed to set permissions in main guild category: " + mainFailure.getMessage()).queue();
+                                                event.reply(TonicEmbedBuilder.sharedMessageEmbed("Failed to set permissions in main guild category: " + mainFailure.getMessage())).queue();
                                             });
                                 }, failure -> {
-                                    event.reply("Failed to create category in main guild: " + failure.getMessage()).queue();
+                                    event.reply(TonicEmbedBuilder.sharedMessageEmbed("Failed to create category in main guild: " + failure.getMessage())).queue();
                                 });
                             });
                 });

@@ -32,6 +32,7 @@ public class JDAInitializer implements CommandLineRunner {
     private final ButtonClickEvent m_buttonClickEvent;
     private final ModalSubmitEvent m_modalSubmitEvent;
     private final GuildJoinEvent m_guildJoinEvent;
+    private final CommissionMessageEvent m_commissionMessageEvent;
     private final StringSelectionInteractionListener m_stringSelectionInteractionListener;
     private final CommandHandler m_commandHandler;
 
@@ -59,7 +60,7 @@ public class JDAInitializer implements CommandLineRunner {
         // Register event listeners
         m_shardManager.addEventListener(
                 m_commandHandler.getCommandClient(),
-                m_readyEvent, m_buttonClickEvent, m_modalSubmitEvent,
+                m_readyEvent, m_buttonClickEvent, m_commissionMessageEvent, m_modalSubmitEvent,
                 m_stringSelectionInteractionListener, m_guildJoinEvent
         );
 

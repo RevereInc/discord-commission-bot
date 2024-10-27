@@ -1,11 +1,12 @@
 package dev.revere.commission.discord.command.impl.freelancer;
 
+import com.jagrosh.jdautilities.command.SlashCommand;
+import com.jagrosh.jdautilities.command.SlashCommandEvent;
+import dev.revere.commission.discord.utility.TonicEmbedBuilder;
 import dev.revere.commission.entities.Freelancer;
 import dev.revere.commission.entities.TitleDescription;
 import dev.revere.commission.repository.FreelancerRepository;
 import dev.revere.commission.services.FreelancerService;
-import com.jagrosh.jdautilities.command.SlashCommand;
-import com.jagrosh.jdautilities.command.SlashCommandEvent;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
@@ -53,14 +54,14 @@ public class CardCommand extends SlashCommand {
             final User user = p_slashCommandEvent.getUser();
 
             if (!m_freelancerRepository.existsFreelancerByUserId(user.getIdLong())) {
-                p_slashCommandEvent.reply("You are not currently a freelancer! Feel free to apply.").setEphemeral(true).queue();
+                p_slashCommandEvent.reply(TonicEmbedBuilder.sharedMessageEmbed("You are not currently a freelancer! Feel free to apply.")).setEphemeral(true).queue();
                 return;
             }
 
             final Freelancer freelancer = m_freelancerRepository.findFreelancerByUserId(user.getIdLong());
 
             if (m_freelancerService.maxCards(freelancer)) {
-                p_slashCommandEvent.reply("You are currently have 3 cards. Try deleting one instead.").setEphemeral(true).queue();
+                p_slashCommandEvent.reply(TonicEmbedBuilder.sharedMessageEmbed("You are currently have 3 cards. Try deleting one instead.")).setEphemeral(true).queue();
                 return;
             }
 
@@ -68,7 +69,7 @@ public class CardCommand extends SlashCommand {
 
             m_freelancerService.addCard(freelancer, titleDescription);
 
-            p_slashCommandEvent.reply("Successfully created card `" + title + "`").setEphemeral(true).queue();
+            p_slashCommandEvent.reply(TonicEmbedBuilder.sharedMessageEmbed("Successfully created card `" + title + "`")).setEphemeral(true).queue();
         }
     }
 
@@ -96,7 +97,7 @@ public class CardCommand extends SlashCommand {
             final User user = p_slashCommandEvent.getUser();
 
             if (!m_freelancerRepository.existsFreelancerByUserId(user.getIdLong())) {
-                p_slashCommandEvent.reply("You are not currently a freelancer! Feel free to apply.").setEphemeral(true).queue();
+                p_slashCommandEvent.reply(TonicEmbedBuilder.sharedMessageEmbed("You are not currently a freelancer! Feel free to apply.")).setEphemeral(true).queue();
                 return;
             }
 
@@ -104,15 +105,15 @@ public class CardCommand extends SlashCommand {
             final TitleDescription titleDescription = m_freelancerService.removeCard(freelancer, index);
 
             if (titleDescription == null) {
-                p_slashCommandEvent.reply("Unable to find card at index `" + index + "`").setEphemeral(true).queue();
+                p_slashCommandEvent.reply(TonicEmbedBuilder.sharedMessageEmbed("Unable to find card at index `" + index + "`")).setEphemeral(true).queue();
             } else {
-                p_slashCommandEvent.reply("Successfully deleted card `" + titleDescription.getTitle() + "`").setEphemeral(true).queue();
+                p_slashCommandEvent.reply(TonicEmbedBuilder.sharedMessageEmbed("Successfully deleted card `" + titleDescription.getTitle() + "`")).setEphemeral(true).queue();
             }
         }
     }
 
     @Override
     protected void execute(final SlashCommandEvent p_slashCommandEvent) {
-        p_slashCommandEvent.reply("Invalid use!").setEphemeral(true).queue();
+        p_slashCommandEvent.reply(TonicEmbedBuilder.sharedMessageEmbed("Invalid use!")).setEphemeral(true).queue();
     }
 }

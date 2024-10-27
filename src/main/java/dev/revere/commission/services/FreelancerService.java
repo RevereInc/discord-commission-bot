@@ -3,7 +3,6 @@ package dev.revere.commission.services;
 import dev.revere.commission.entities.Department;
 import dev.revere.commission.entities.Freelancer;
 import dev.revere.commission.entities.TitleDescription;
-import net.dv8tion.jda.api.entities.Role;
 
 public interface FreelancerService {
     /**
@@ -23,12 +22,12 @@ public interface FreelancerService {
     void removeDepartment(Freelancer p_freelancer, Department p_department);
 
     /**
-     * Set the bio of a freelancer.
+     * Set the portfolio of a freelancer.
      *
-     * @param p_freelancer The Freelancer object to which the bio is set.
-     * @param p_bio        The bio to set.
+     * @param p_freelancer The Freelancer object to which the portfolio is set.
+     * @param p_portfolio  The portfolio to set.
      */
-    void setBio(Freelancer p_freelancer, String p_bio);
+    void setPortfolio(Freelancer p_freelancer, String p_portfolio);
 
     /**
      * Check if a freelancer has reached the maximum number of cards.

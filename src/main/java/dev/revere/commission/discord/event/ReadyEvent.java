@@ -1,5 +1,6 @@
 package dev.revere.commission.discord.event;
 
+import dev.revere.commission.Constants;
 import dev.revere.commission.entities.Commission;
 import dev.revere.commission.repository.CommissionRepository;
 import dev.revere.commission.repository.DepartmentRepository;
@@ -9,6 +10,7 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Activity;
+import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.springframework.stereotype.Service;
 
@@ -36,7 +38,7 @@ public class ReadyEvent extends ListenerAdapter {
 
     @Override
     public void onReady(final net.dv8tion.jda.api.events.session.ReadyEvent event) {
-        log.info("Successfully logged into " + event.getJDA().getSelfUser().getName());
+        log.info("Successfully logged into {}", event.getJDA().getSelfUser().getName());
         initializeActivities();
         startCyclingStatuses(event.getJDA());
     }

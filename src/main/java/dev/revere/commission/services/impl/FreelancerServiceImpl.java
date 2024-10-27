@@ -59,18 +59,18 @@ public class FreelancerServiceImpl implements FreelancerService {
     }
 
     /**
-     * Set the bio of a freelancer.
+     * Set the portfolio of a freelancer.
      *
-     * @param p_freelancer The Freelancer object to which the bio is set.
-     * @param p_bio        The bio to set.
+     * @param p_freelancer The Freelancer object to which the portfolio is set.
+     * @param p_portfolio  The portfolio to set.
      */
     @Override
-    public void setBio(Freelancer p_freelancer, String p_bio) {
+    public void setPortfolio(Freelancer p_freelancer, String p_portfolio) {
         if (p_freelancer == null) {
             throw new IllegalArgumentException("Freelancer cannot be null");
         }
 
-        p_freelancer.setBio(p_bio);
+        p_freelancer.setPortfolio(p_portfolio);
         m_freelancerRepository.save(p_freelancer);
     }
 

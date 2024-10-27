@@ -8,6 +8,7 @@ import dev.revere.commission.entities.Department;
 import dev.revere.commission.repository.CommissionRepository;
 import dev.revere.commission.services.CommissionService;
 import lombok.AllArgsConstructor;
+import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
@@ -17,6 +18,7 @@ import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.awt.*;
@@ -34,6 +36,8 @@ public class ModalSubmitEvent extends ListenerAdapter {
     private final CommissionRepository m_commissionRepository;
     private final CommissionService m_commissionService;
 
+    private final CommissionMessageEvent m_commissionMessageEvent;
+
     @Override
     public void onModalInteraction(@NotNull final ModalInteractionEvent p_modalInteractionEvent) {
         String modalId = p_modalInteractionEvent.getModalId();
@@ -45,12 +49,12 @@ public class ModalSubmitEvent extends ListenerAdapter {
 
                 final Department commissionData = CommissionData.getSelectedCategory(member);
                 if (commissionData == null) {
-                    p_modalInteractionEvent.reply("Please select a category").setEphemeral(true).queue();
+                    p_modalInteractionEvent.reply(TonicEmbedBuilder.sharedMessageEmbed("Please select a category")).setEphemeral(true).queue();
                     return;
                 }
 
                 if (p_modalInteractionEvent.getJDA().getCategoryById(commissionData.getCommissionGuildCategoryID()) == null) {
-                    p_modalInteractionEvent.reply("The selected category does not exist").setEphemeral(true).queue();
+                    p_modalInteractionEvent.reply(TonicEmbedBuilder.sharedMessageEmbed("The selected category does not exist")).setEphemeral(true).queue();
                     return;
                 }
 
@@ -82,9 +86,13 @@ public class ModalSubmitEvent extends ListenerAdapter {
                                     .createTextChannel(member.getUser().getName())
                                     .setParent(p_modalInteractionEvent.getJDA().getCategoryById(commissionData.getMainGuildCategoryID()))
                                     .queue(publicTextChannel -> {
+                                        publicTextChannel.upsertPermissionOverride(member)
+                                                .setAllowed(Permission.VIEW_CHANNEL)
+                                                .queue();
                                         publicTextChannel.sendMessage(getCustomerCommissionEmbed(commission.getDescription(), commission.getFormattedQuote())).queue();
                                         commission.setPublicChannelId(publicTextChannel.getIdLong());
                                         m_commissionRepository.save(commission);
+                                        m_commissionMessageEvent.setupInitialMessages(commission, p_modalInteractionEvent.getJDA());
 
                                         p_modalInteractionEvent.reply(getSucceedCommissionCreation(commission.getPublicChannelId()))
                                                 .setEphemeral(true)
@@ -125,7 +133,7 @@ public class ModalSubmitEvent extends ListenerAdapter {
         String description = String.format(
                 """
                         **%s** has sent a new quote for the commission.
-                        ### <:RVC_Discount:1299484670098145341> New Quoted Price
+                        ### <:1270673327098167347:1299806215915700315> New Quoted Price
                         ```
                         %s
                         ```""",
@@ -147,9 +155,9 @@ public class ModalSubmitEvent extends ListenerAdapter {
         String description = String.format(
                 """
                         Your commission request to **%s** has been received. This is an automated message. Please wait for a response from one of our freelancers.
-                        ### <:RVC_Log:1299484630101262387> Commission Details
+                        ### <:1270455353620041829:1299806081140133898> Commission Details
                         %s
-                        ### <:RVC_Discount:1299484670098145341> Quoted Price
+                        ### <:1270673327098167347:1299806215915700315> Quoted Price
                         ```
                         %s
                         ```""",
@@ -171,9 +179,9 @@ public class ModalSubmitEvent extends ListenerAdapter {
         String description = String.format(
                 """
                         A new commission request has been received from **%s**.
-                        ### <:RVC_Log:1299484630101262387> Commission Details
+                        ### <:1270455353620041829:1299806081140133898> Commission Details
                         %s
-                        ### <:RVC_Discount:1299484670098145341> Quoted Price
+                        ### <:1270673327098167347:1299806215915700315> Quoted Price
                         ```
                         %s
                         ```""",

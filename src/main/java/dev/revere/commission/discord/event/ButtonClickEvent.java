@@ -208,7 +208,7 @@ public class ButtonClickEvent extends ListenerAdapter {
                 }
 
                 if (options.isEmpty()) {
-                    p_buttonInteractionEvent.reply("No one has accepted this commission").setEphemeral(true).queue();
+                    p_buttonInteractionEvent.reply(TonicEmbedBuilder.sharedMessageEmbed("No one has accepted this commission")).setEphemeral(true).queue();
                     return;
                 }
 
@@ -237,7 +237,7 @@ public class ButtonClickEvent extends ListenerAdapter {
             case "cancel-ongoing-commission" -> {
                 Commission commission = m_commissionRepository.findCommissionByPublicChannelId(p_buttonInteractionEvent.getChannel().getIdLong());
                 m_commissionService.cancelCommission(commission);
-                p_buttonInteractionEvent.reply("Cancelling commission, channel will be deleted after 10 seconds.").queue();
+                p_buttonInteractionEvent.reply(TonicEmbedBuilder.sharedMessageEmbed("Cancelling commission, channel will be deleted after 10 seconds.")).queue();
                 p_buttonInteractionEvent.getChannel().delete().queueAfter(10, TimeUnit.SECONDS);
             }
 
@@ -277,7 +277,7 @@ public class ButtonClickEvent extends ListenerAdapter {
                 if (button.startsWith("accept-quote-")) {
                     String[] parts = button.split("-");
                     if (parts.length < 3) {
-                        p_buttonInteractionEvent.reply("Invalid button interaction.").setEphemeral(true).queue();
+                        p_buttonInteractionEvent.reply(TonicEmbedBuilder.sharedMessageEmbed("Invalid button interaction.")).setEphemeral(true).queue();
                         return;
                     }
 
@@ -316,7 +316,7 @@ public class ButtonClickEvent extends ListenerAdapter {
                 } else if (button.startsWith("decline-quote-")) {
                     String[] parts = button.split("-");
                     if (parts.length < 3) {
-                        p_buttonInteractionEvent.reply("Invalid button interaction.").setEphemeral(true).queue();
+                        p_buttonInteractionEvent.reply(TonicEmbedBuilder.sharedMessageEmbed("Invalid button interaction.")).setEphemeral(true).queue();
                         return;
                     }
 
@@ -333,7 +333,7 @@ public class ButtonClickEvent extends ListenerAdapter {
                     p_buttonInteractionEvent.getChannel().retrieveMessageById(messageId).queue(message -> {
                         message.delete().queue();
                     }, failure -> {
-                        p_buttonInteractionEvent.reply("Failed to retrieve the message for deletion: " + failure.getMessage()).setEphemeral(true).queue();
+                        p_buttonInteractionEvent.reply(TonicEmbedBuilder.sharedMessageEmbed("Failed to retrieve the message for deletion: " + failure.getMessage())).setEphemeral(true).queue();
                     });
 
                     p_buttonInteractionEvent.reply(TonicEmbedBuilder.sharedMessageEmbed("You have declined " + freelancerMember.getUser().getName() + "'s quote.")).setEphemeral(true).queue();
@@ -366,9 +366,9 @@ public class ButtonClickEvent extends ListenerAdapter {
         String description = String.format(
                 """
                         This commission will now be handled by **%s**. Here are the details:
-                        ### <:RVC_Log:1299484630101262387> Commission Details
+                        ### <:1270455353620041829:1299806081140133898> Commission Details
                         %s
-                        ### <:RVC_Discount:1299484670098145341> Quoted Price
+                        ### <:1270673327098167347:1299806215915700315> Quoted Price
                         ```
                         %s
                         ```""",
@@ -394,7 +394,7 @@ public class ButtonClickEvent extends ListenerAdapter {
                 """
                         **Welcome to %s's Commission Channel!**
                         Please select a category for your commission from the dropdown menu below. Our freelancers are ready to assist you with your request.  
-                        ### <:RVC_Cart:1299484525348388995> How to Create a Commission:
+                        ### <:1270446417206312980:1299806078044868719> How to Create a Commission:
                         - Choose the appropriate category for your request.  
                         - Click the button below to proceed with your commission.  
                         """,
