@@ -44,7 +44,7 @@ public class ModalSubmitEvent extends ListenerAdapter {
         Member member = p_modalInteractionEvent.getMember();
 
         switch (modalId) {
-            case "commission-model" -> {
+            case "commission-modal" -> {
                 assert member != null;
 
                 final Department commissionData = CommissionData.getSelectedCategory(member);
@@ -79,6 +79,7 @@ public class ModalSubmitEvent extends ListenerAdapter {
                         .createTextChannel(member.getUser().getName())
                         .setParent(p_modalInteractionEvent.getJDA().getCategoryById(commissionData.getCommissionGuildCategoryID()))
                         .queue(textChannel -> {
+                            textChannel.sendMessage("<@&" + commissionData.getCommissionGuildRoleId() + ">").queue();
                             textChannel.sendMessage(getCommissionEmbed(member.getUser().getName(), commission.getDescription(), commission.getFormattedQuote())).queue();
                             commission.setChannelId(textChannel.getIdLong());
 

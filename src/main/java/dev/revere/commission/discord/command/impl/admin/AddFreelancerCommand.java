@@ -86,7 +86,7 @@ public class AddFreelancerCommand extends SlashCommand {
         }
 
         if (commissionGuild.getMember(member.getUser()) == null) {
-            commissionGuild.getTextChannelById(1299825190385221652L).createInvite().setMaxAge(43200)
+            commissionGuild.getTextChannelById(Constants.FREELANCING_BASICS_CHANNEL_ID).createInvite().setMaxAge(43200)
                 .setMaxUses(1)
                 .queue(invite -> {
                     String inviteLink = invite.getUrl();

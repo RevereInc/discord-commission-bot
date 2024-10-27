@@ -65,7 +65,7 @@ public class StringSelectionInteractionListener extends ListenerAdapter {
                         .setRequired(true)
                         .build();
 
-                Modal modal = Modal.create("commission-model", selectedCategory)
+                Modal modal = Modal.create("commission-modal", selectedCategory)
                         .addComponents(ActionRow.of(description), ActionRow.of(quote)).build();
 
                 CommissionData.setSelectedCategory(member, m_departmentRepository.findDepartmentByName(selectedCategory));

@@ -87,11 +87,8 @@ public class CreateDepartmentCommand extends SlashCommand {
                             .queue(commissionRole -> {
                                 mainGuild.createCategory(departmentName).queue(categoryInMainGuild -> {
                                     categoryInMainGuild.getManager()
-                                            .putPermissionOverride(mainRole, EnumSet.of(Permission.VIEW_CHANNEL, Permission.MESSAGE_SEND), null)
                                             .queue(mainSuccess -> {
-                                                categoryInMainGuild.getManager()
-                                                        .putPermissionOverride(mainGuild.getPublicRole(), null, EnumSet.of(Permission.VIEW_CHANNEL))
-                                                        .queue();
+                                                categoryInMainGuild.getManager().putPermissionOverride(mainGuild.getPublicRole(), null, EnumSet.of(Permission.VIEW_CHANNEL)).queue();
 
                                                 commissionGuild.createCategory(departmentName).queue(categoryInCommissionGuild -> {
                                                     categoryInCommissionGuild.getManager()

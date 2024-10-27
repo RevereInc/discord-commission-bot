@@ -17,6 +17,7 @@ public final class Constants {
 
     public static final long WELCOME_CHANNEL_ID = 1299489838533447701L;
     public static final long TRANSCRIPT_CHANNEL_ID = 1299515030760591431L;
+    public static final long FREELANCING_BASICS_CHANNEL_ID = 1300092357697343599L;
 
     public static final long GLOBAL_FREELANCER_ROLE_ID = 1282432859881345047L;
 

@@ -126,7 +126,7 @@ public class CommissionMessageEvent extends ListenerAdapter {
         String description = String.format(
                 """
                         You have received a new message from **%s**:
-                        ### <:RVC_Chat:1299484561637638185> Message:
+                        ### <:1270466689783431289:1299806135150444638> Message:
                         - %s
                                                 
                         *Reply to this message to communicate with the other party*
@@ -148,7 +148,7 @@ public class CommissionMessageEvent extends ListenerAdapter {
         if (clientChannel != null) {
             String clientDescription = """
                     You have started a new commission thread.
-                    ### <:RVC_Chat:1299484561637638185> Instructions:
+                    ### <:1270466689783431289:1299806135150444638> Instructions:
                     - Reply to this message to communicate with the freelancer
                                 
                     *Your messages will be relayed to the freelancer automatically*
@@ -170,7 +170,7 @@ public class CommissionMessageEvent extends ListenerAdapter {
         if (freelancerChannel != null) {
             String freelancerDescription = """
                     A new commission thread has been created.
-                    ### <:RVC_Chat:1299484561637638185> Instructions:
+                    ### <:1270466689783431289:1299806135150444638> Instructions:
                     - Reply to this message to communicate with the client
                                 
                     *Your messages will be relayed to the client automatically*
