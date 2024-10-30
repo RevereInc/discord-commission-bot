@@ -84,7 +84,7 @@ public class ProfileCommand extends SlashCommand {
 
     public MessageCreateData informationEmbed(final String p_member, final String p_rating, final String p_departmentNamesPretty,
                                               final String p_portfolio, final List<TitleDescription> p_titleDescriptions, final String p_iconUrl) {
-        TonicEmbedBuilder tonicEmbedBuilder =  new TonicEmbedBuilder()
+        TonicEmbedBuilder tonicEmbedBuilder = new TonicEmbedBuilder()
                 .setTitle(" ")
                 .setDescription("View **" + p_member + "'s** freelancer statistics")
                 .addField("Departments", p_departmentNamesPretty, false)

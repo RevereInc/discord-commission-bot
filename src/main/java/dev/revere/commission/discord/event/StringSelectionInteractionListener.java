@@ -1,13 +1,19 @@
 package dev.revere.commission.discord.event;
 
 import dev.revere.commission.Constants;
+import dev.revere.commission.data.InvoiceDetails;
 import dev.revere.commission.discord.utility.CommissionData;
 import dev.revere.commission.discord.utility.TonicEmbedBuilder;
 import dev.revere.commission.entities.Commission;
+import dev.revere.commission.exception.PaymentException;
+import dev.revere.commission.factory.PaymentServiceFactory;
 import dev.revere.commission.repository.CommissionRepository;
 import dev.revere.commission.repository.DepartmentRepository;
 import dev.revere.commission.repository.FreelancerRepository;
 import dev.revere.commission.services.CommissionService;
+import dev.revere.commission.services.PaymentService;
+import dev.revere.commission.services.impl.PayPalServiceImpl;
+import dev.revere.commission.services.impl.StripeServiceImpl;
 import lombok.AllArgsConstructor;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
@@ -43,6 +49,7 @@ public class StringSelectionInteractionListener extends ListenerAdapter {
     private final DepartmentRepository m_departmentRepository;
     private final FreelancerRepository m_freelancerRepository;
     private final CommissionService m_commissionService;
+    private final PaymentServiceFactory m_paymentServiceFactory;
 
     @Override
     public void onStringSelectInteraction(@NotNull final StringSelectInteractionEvent p_stringSelectInteractionEvent) {
@@ -108,6 +115,107 @@ public class StringSelectionInteractionListener extends ListenerAdapter {
                         });
             }
 
+            case "payment-service-select" -> {
+                String selectedService = p_stringSelectInteractionEvent.getValues().get(0);
+                Commission commission = m_commissionRepository.findCommissionByPublicChannelId(p_stringSelectInteractionEvent.getChannel().getIdLong());
+                if (!commission.isPaymentPending()) {
+                    p_stringSelectInteractionEvent.reply(TonicEmbedBuilder.sharedMessageEmbed("Payment has already been requested for this commission."))
+                            .setEphemeral(true)
+                            .queue();
+                    return;
+                }
+
+                if (commission.getInvoiceId() != null && !commission.getInvoiceId().isEmpty()) {
+                    try {
+                        String serviceType = commission.getPaymentService().toLowerCase();
+                        PaymentService paymentService = m_paymentServiceFactory.getPaymentService(serviceType);
+
+                        InvoiceDetails invoiceDetails = paymentService instanceof StripeServiceImpl
+                                ? paymentService.getInvoiceDetails(commission.getStripePaymentLinkId())
+                                : paymentService.getInvoiceDetails(commission.getInvoiceId());
+                        String paymentLink = paymentService.getPaymentLink(commission.getInvoiceId());
+
+                        String amountDetails = String.format("$%.2f", invoiceDetails.totalAmount());
+                        String status = invoiceDetails.status().toString();
+
+                        String description = String.format(
+                                """
+                                An existing payment invoice has been found for your commission.
+                                ### <:1270455353620041829:1299806081140133898> Invoice Details
+                                - **Status:** %s
+                                - **Total Amount:** %s
+                                - **Payment Link:** %s
+                                """,
+                                status,
+                                amountDetails,
+                                paymentLink,
+                                paymentService.getServiceName()
+                        );
+
+                        TonicEmbedBuilder embed = new TonicEmbedBuilder()
+                                .setTitle(" ")
+                                .setDescription(description)
+                                .setColor(Color.decode("#2b2d31"))
+                                .setTimeStamp(Instant.now());
+
+                        p_stringSelectInteractionEvent.reply(embed.build())
+                                .setEphemeral(true)
+                                .queue();
+                        return;
+                    } catch (PaymentException e) {
+                        e.printStackTrace();
+                        p_stringSelectInteractionEvent.reply("Failed to retrieve invoice details. Please try again later.")
+                                .setEphemeral(true)
+                                .queue();
+                        return;
+                    }
+                }
+
+                try {
+                    PaymentService paymentService = m_paymentServiceFactory.getPaymentService(selectedService);
+                    String invoiceId = paymentService instanceof PayPalServiceImpl ? paymentService.createInvoice(commission, Double.parseDouble(commission.getQuote()),
+                            """
+                                    Commission Payment
+                                    Commission ID: %s
+                                    Description: %s
+                                    Amount: %s
+                                    """
+                                    .formatted(commission.getId(), commission.getDescription(), commission.getFormattedQuote())
+                    ) : paymentService.createInvoice(commission, Double.parseDouble(commission.getQuote()), commission.getClient() + " | " + commission.getCategory() + " Service Payment");
+                    paymentService.updateCommissionWithInvoiceDetails(commission, invoiceId);
+
+                    String description = String.format(
+                            """
+                            A payment invoice has been generated for your commission.
+                            ### <:1270455353620041829:1299806081140133898> Commission Details
+                            - **Amount:** %s
+                            - **Description:** %s
+                            ### <:1270673327098167347:1299806215915700315> Payment Information
+                            - **Payment Service:** %s
+                            - **Payment Link:** %s
+                            Click the payment link above to complete your payment.
+                            """,
+                            commission.getFormattedQuote(),
+                            commission.getDescription(),
+                            selectedService,
+                            paymentService.getPaymentLink(commission.getInvoiceId())
+                    );
+
+                    TonicEmbedBuilder embed = new TonicEmbedBuilder()
+                            .setTitle(" ")
+                            .setDescription(description)
+                            .setColor(Color.decode("#2b2d31"))
+                            .setTimeStamp(Instant.now());
+
+                    p_stringSelectInteractionEvent.reply(embed.build()).queue();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    p_stringSelectInteractionEvent.reply("Failed to create payment invoice. Please try again later.")
+                            .setEphemeral(true)
+                            .queue();
+                }
+            }
+
             case "disapprove-freelancer" -> {
                 String selectedFreelancerId = p_stringSelectInteractionEvent.getValues().get(0);
                 User freelancerUser = p_stringSelectInteractionEvent.getJDA().getUserById(selectedFreelancerId);
@@ -171,7 +279,6 @@ public class StringSelectionInteractionListener extends ListenerAdapter {
                 .setTitle(" ")
                 .setDescription(description)
                 .addButton(ButtonStyle.SUCCESS, "finish-commission", "Mark As Finished", Emoji.fromUnicode("U+1F3AB"))
-                .addButton(ButtonStyle.PRIMARY, "payment-finished", "Mark Payment As Received", Emoji.fromUnicode("U+1F3AB"))
                 .addButton(ButtonStyle.SECONDARY, "request-payment", "Request Payment", Emoji.fromUnicode("U+1F3AB"))
                 .addButton(ButtonStyle.DANGER, "cancel-ongoing-commission", "Cancel Commission", Emoji.fromUnicode("U+1F3AB"))
                 .setTimeStamp(Instant.now())

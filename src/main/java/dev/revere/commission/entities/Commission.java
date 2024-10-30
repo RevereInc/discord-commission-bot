@@ -1,5 +1,6 @@
 package dev.revere.commission.entities;
 
+import dev.revere.commission.services.PaymentService;
 import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -40,6 +41,15 @@ public class Commission implements Serializable {
     // The description of the commission
     private String description;
 
+    // The ID of the invoice associated with the commission
+    private String invoiceId;
+
+    // The ID of the payment link associated with the commission (for Stripe)
+    private String stripePaymentLinkId;
+
+    // The payment service used for the commission
+    private String paymentService;
+
     // The freelancer associated with the commission
     private String freelancer;
 
@@ -64,25 +74,27 @@ public class Commission implements Serializable {
     // Check if the payment is still pending
     private boolean paymentPending;
 
-    public String getFormattedQuote() {
-        return "$" + String.format("%.2f", Double.parseDouble(quote));
-    }
-
     private HashMap<Long, Long> clientMessages = new HashMap<>();
     private HashMap<Long, Long> freelancerMessages = new HashMap<>();
     private long initialClientMessageId;
     private long initialFreelancerMessageId;
 
+    public String getFormattedQuote() {
+        return "$" + String.format("%.2f", Double.parseDouble(quote));
+    }
+
     @Override
     public String toString() {
         return "Commission{" +
-                "id='" + id + '\'' +
+                "id='" + id +
                 ", userId=" + userId +
-                ", username='" + client + '\'' +
-                ", category='" + category + '\'' +
-                ", quote='" + quote + '\'' +
-                ", description='" + description + '\'' +
-                ", freelancer='" + freelancer + '\'' +
+                ", username='" + client +
+                ", category='" + category +
+                ", quote='" + quote +
+                ", invoiceId='" + invoiceId +
+                ", paymentService='" + paymentService +
+                ", description='" + description +
+                ", freelancer='" + freelancer +
                 ", freelancerId=" + freelancerId +
                 ", channelId=" + channelId +
                 ", publicChannelId=" + publicChannelId +

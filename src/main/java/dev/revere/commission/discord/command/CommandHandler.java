@@ -33,6 +33,7 @@ public class CommandHandler {
     private final RemoveDepartmentCommand m_removeServiceCommand;
     private final RemoveFreelancerCommand m_removeFreelancerCommand;
     private final DeleteDepartmentCommand m_deleteDepartmentCommand;
+    private final RegenerateInvoiceCommand m_regenerateInvoiceCommand;
     private final CardCommand m_cardCommand;
     private final SyncCommand m_syncCommand;
     private final SetPortfolio m_setPortfolioCommand;
@@ -54,7 +55,7 @@ public class CommandHandler {
                         m_supportCommand, m_removeFreelancerCommand, m_createDepartmentCommand, m_tonicInfoCommand,
                         m_addFreelancerCommand, m_profileCommand, m_addDepartmentCommand,
                         m_banCommand, m_kickCommand, m_removeServiceCommand,
-                        m_cardCommand, m_syncCommand, m_setPortfolioCommand, m_deleteDepartmentCommand
+                        m_cardCommand, m_syncCommand, m_setPortfolioCommand, m_deleteDepartmentCommand, m_regenerateInvoiceCommand
                 )
                 .build();
     }

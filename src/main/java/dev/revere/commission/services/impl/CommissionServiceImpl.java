@@ -1,7 +1,6 @@
 package dev.revere.commission.services.impl;
 
 import dev.revere.commission.Constants;
-import dev.revere.commission.discord.JDAInitializer;
 import dev.revere.commission.discord.utility.TonicEmbedBuilder;
 import dev.revere.commission.entities.Commission;
 import dev.revere.commission.repository.CommissionRepository;
@@ -41,6 +40,8 @@ public class CommissionServiceImpl implements CommissionService {
         commission.setCategory(p_string);
         commission.setDescription(p_description);
         commission.setQuote(p_quote);
+        commission.setInvoiceId(null);
+        commission.setPaymentService(null);
         commission.setPaymentPending(true);
         commission.setState(Commission.State.PENDING);
         commission.setInterestedFreelancers(new HashMap<>());
@@ -159,7 +160,7 @@ public class CommissionServiceImpl implements CommissionService {
                         %s
                         ### <:1270673327098167347:1299806215915700315> Quoted Price
                         ```
-                        $%s
+                        %s
                         ```""",
                 p_member,
                 p_commission.getDescription(),

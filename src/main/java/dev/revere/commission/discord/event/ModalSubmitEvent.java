@@ -68,6 +68,11 @@ public class ModalSubmitEvent extends ListenerAdapter {
 
                 try {
                     Double.parseDouble(quote);
+
+                    if (Double.parseDouble(quote) < 0) {
+                        p_modalInteractionEvent.reply(TonicEmbedBuilder.sharedMessageEmbed("Please enter a valid number for the quote")).setEphemeral(true).queue();
+                        return;
+                    }
                 } catch (NumberFormatException e) {
                     p_modalInteractionEvent.reply(TonicEmbedBuilder.sharedMessageEmbed("Please enter a valid number for the quote")).setEphemeral(true).queue();
                     return;

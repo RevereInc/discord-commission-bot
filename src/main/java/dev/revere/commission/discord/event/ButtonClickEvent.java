@@ -1,16 +1,20 @@
 package dev.revere.commission.discord.event;
 
 import dev.revere.commission.Constants;
+import dev.revere.commission.data.InvoiceDetails;
 import dev.revere.commission.discord.utility.TonicEmbedBuilder;
 import dev.revere.commission.entities.Commission;
 import dev.revere.commission.entities.Department;
+import dev.revere.commission.exception.PaymentException;
+import dev.revere.commission.factory.PaymentServiceFactory;
 import dev.revere.commission.repository.CommissionRepository;
 import dev.revere.commission.repository.DepartmentRepository;
 import dev.revere.commission.services.CommissionService;
+import dev.revere.commission.services.PaymentService;
+import dev.revere.commission.services.impl.StripeServiceImpl;
 import lombok.AllArgsConstructor;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.channel.concrete.Category;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
@@ -30,8 +34,8 @@ import org.springframework.stereotype.Service;
 
 import java.awt.*;
 import java.time.Instant;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -48,6 +52,7 @@ public class ButtonClickEvent extends ListenerAdapter {
     private final CommissionRepository m_commissionRepository;
     private final DepartmentRepository m_departmentRepository;
     private final CommissionService m_commissionService;
+    private final PaymentServiceFactory m_paymentServiceFactory;
 
     private final Map<Long, ScheduledFuture<?>> deletionTasks = new HashMap<>();
 
@@ -81,6 +86,10 @@ public class ButtonClickEvent extends ListenerAdapter {
                 assert member != null;
 
                 Commission commission = m_commissionRepository.findCommissionByChannelId(p_buttonInteractionEvent.getChannel().getIdLong());
+                if (commission.getState() == Commission.State.IN_PROGRESS || commission.getState() == Commission.State.COMPLETED || commission.getState() == Commission.State.CANCELLED) {
+                    p_buttonInteractionEvent.reply(TonicEmbedBuilder.sharedMessageEmbed("Commission is already in progress, finished, or cancelled.")).setEphemeral(true).queue();
+                    return;
+                }
 
                 Long freelancerId = member.getIdLong();
                 String freelancerName = member.getUser().getName();
@@ -175,6 +184,12 @@ public class ButtonClickEvent extends ListenerAdapter {
             }
 
             case "delete-commission" -> {
+                assert member != null;
+                if (!member.hasPermission(Permission.ADMINISTRATOR)) {
+                    p_buttonInteractionEvent.reply(TonicEmbedBuilder.sharedMessageEmbed("You do not have permission to delete this commission.")).setEphemeral(true).queue();
+                    return;
+                }
+
                 p_buttonInteractionEvent.getChannel().sendMessage(deleteCommissionEmbed()).complete();
 
                 long channelId = p_buttonInteractionEvent.getChannel().getIdLong();
@@ -184,7 +199,7 @@ public class ButtonClickEvent extends ListenerAdapter {
                 m_commissionService.scheduleDeletion(commission, member, channelId, publicChannelId);
             }
 
-            case "cancel-commission" -> {
+            case "cancel-deletion" -> {
                 p_buttonInteractionEvent.getChannel().sendMessage(cancelledCommissionDeletion()).queue();
                 p_buttonInteractionEvent.getChannel().deleteMessageById(p_buttonInteractionEvent.getMessageId()).queue();
 
@@ -230,8 +245,76 @@ public class ButtonClickEvent extends ListenerAdapter {
 
             case "request-payment" -> {
                 Commission commission = m_commissionRepository.findCommissionByPublicChannelId(p_buttonInteractionEvent.getChannel().getIdLong());
-                // todo: paypal invoice integration
-                p_buttonInteractionEvent.reply(TonicEmbedBuilder.sharedMessageEmbed("Pay the invoice: " + "generated invoice here")).queue();
+                if (!commission.isPaymentPending()) {
+                    p_buttonInteractionEvent.reply(TonicEmbedBuilder.sharedMessageEmbed("Payment has already been requested for this commission."))
+                            .setEphemeral(true)
+                            .queue();
+                    return;
+                }
+
+                if (commission.getInvoiceId() != null && !commission.getInvoiceId().isEmpty()) {
+                    try {
+                        String serviceType = commission.getPaymentService().toLowerCase();
+                        PaymentService paymentService = m_paymentServiceFactory.getPaymentService(serviceType);
+
+                        InvoiceDetails invoiceDetails = paymentService instanceof StripeServiceImpl
+                                ? paymentService.getInvoiceDetails(commission.getStripePaymentLinkId())
+                                : paymentService.getInvoiceDetails(commission.getInvoiceId());
+                        String paymentLink = paymentService.getPaymentLink(commission.getInvoiceId());
+
+                        String amountDetails = String.format("$%.2f", invoiceDetails.totalAmount());
+                        String status = invoiceDetails.status().toString();
+
+                        String description = String.format(
+                                """
+                                An existing payment invoice has been found for your commission.
+                                ### <:1270455353620041829:1299806081140133898> Invoice Details
+                                - **Status:** %s
+                                - **Total Amount:** %s
+                                - **Payment Link:** %s
+                                ### <:1270673327098167347:1299806215915700315> Payment Service
+                                ```
+                                %s
+                                ```""",
+                                status,
+                                amountDetails,
+                                paymentLink,
+                                paymentService.getServiceName()
+                        );
+
+                        TonicEmbedBuilder embed = new TonicEmbedBuilder()
+                                .setTitle(" ")
+                                .setDescription(description)
+                                .setColor(Color.decode("#2b2d31"))
+                                .setTimeStamp(Instant.now());
+
+                        p_buttonInteractionEvent.reply(embed.build())
+                                .setEphemeral(true)
+                                .queue();
+                        return;
+                    } catch (PaymentException e) {
+                        e.printStackTrace();
+                        p_buttonInteractionEvent.reply("Failed to retrieve invoice details. Please try again later.")
+                                .setEphemeral(true)
+                                .queue();
+                        return;
+                    }
+                }
+
+                StringSelectMenu.Builder selectionMenuBuilder = StringSelectMenu.create("payment-service-select")
+                        .setPlaceholder("Select Payment Service");
+
+                for (PaymentService service : m_paymentServiceFactory.getPaymentServices().values()) {
+                    String serviceName = service.getServiceName();
+                    selectionMenuBuilder.addOption(serviceName, serviceName.toLowerCase());
+                }
+
+                StringSelectMenu selectionMenu = selectionMenuBuilder.build();
+
+                p_buttonInteractionEvent.reply("Please select a payment service:")
+                        .addActionRow(selectionMenu)
+                        .setEphemeral(true)
+                        .queue();
             }
 
             case "cancel-ongoing-commission" -> {
@@ -239,22 +322,6 @@ public class ButtonClickEvent extends ListenerAdapter {
                 m_commissionService.cancelCommission(commission);
                 p_buttonInteractionEvent.reply(TonicEmbedBuilder.sharedMessageEmbed("Cancelling commission, channel will be deleted after 10 seconds.")).queue();
                 p_buttonInteractionEvent.getChannel().delete().queueAfter(10, TimeUnit.SECONDS);
-            }
-
-            case "payment-finished" -> {
-                final long channelId = Long.parseLong(p_buttonInteractionEvent.getMessage().getChannel().getId());
-                final Commission commission = m_commissionRepository.findCommissionByPublicChannelId(channelId);
-
-                String interactionUser = p_buttonInteractionEvent.getUser().getId();
-                if (!interactionUser.equals(String.valueOf(commission.getFreelancerId()))) {
-                    p_buttonInteractionEvent.reply(restrictedAccessEmbed()).setEphemeral(true).queue();
-                    return;
-                }
-
-                commission.setPaymentPending(false);
-                m_commissionRepository.save(commission);
-
-                p_buttonInteractionEvent.reply(TonicEmbedBuilder.sharedMessageEmbed("Payment has been marked at received.")).queue();
             }
 
             case "finish-commission" -> {
@@ -381,7 +448,6 @@ public class ButtonClickEvent extends ListenerAdapter {
                 .setTitle(" ")
                 .setDescription(description)
                 .addButton(ButtonStyle.SUCCESS, "finish-commission", "Mark As Finished", Emoji.fromUnicode("U+1F3AB"))
-                .addButton(ButtonStyle.PRIMARY, "payment-finished", "Mark Payment As Received", Emoji.fromUnicode("U+1F3AB"))
                 .addButton(ButtonStyle.SECONDARY, "request-payment", "Request Payment", Emoji.fromUnicode("U+1F3AB"))
                 .addButton(ButtonStyle.DANGER, "cancel-ongoing-commission", "Cancel Commission", Emoji.fromUnicode("U+1F3AB"))
                 .setTimeStamp(Instant.now())
@@ -444,7 +510,7 @@ public class ButtonClickEvent extends ListenerAdapter {
                 .setDescription("Deleting commission in 10 seconds...")
                 .setTimeStamp(Instant.now())
                 .setColor(Color.decode("#2b2d31"))
-                .addButton(ButtonStyle.DANGER, "cancel-commission", "Cancel Deletion", Emoji.fromUnicode("U+1F3AB"))
+                .addButton(ButtonStyle.DANGER, "cancel-deletion", "Cancel Deletion", Emoji.fromUnicode("U+1F3AB"))
                 .build();
     }
 

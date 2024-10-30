@@ -4,6 +4,8 @@ import dev.revere.commission.entities.Commission;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
+import java.util.Optional;
+
 /**
  * Repository interface for managing Commission entities in MongoDB.
  * This interface provides methods for CRUD operations on Commission objects.
@@ -44,6 +46,22 @@ public interface CommissionRepository extends MongoRepository<Commission, String
      * @return The Commission object associated with the given user ID.
      */
     Commission findCommissionByUserId(long userId);
+
+    /**
+     * Find a commission by the invoice ID.
+     *
+     * @param invoiceId The ID of the invoice associated with the commission.
+     * @return The Commission object associated with the given invoice ID.
+     */
+    Optional<Commission> findCommissionByInvoiceId(String invoiceId);
+
+    /**
+     * Find a commission by the Stripe payment link ID.
+     *
+     * @param stripePaymentLinkId The ID of the payment link associated with the commission.
+     * @return The Commission object associated with the given payment link ID.
+     */
+    Optional<Commission> findCommissionByStripePaymentLinkId(String stripePaymentLinkId);
 
     /**
      * Retrieve the total amount of all commissions

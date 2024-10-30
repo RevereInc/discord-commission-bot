@@ -1,7 +1,6 @@
 package dev.revere.commission.services.impl;
 
 import dev.revere.commission.Constants;
-import dev.revere.commission.discord.JDAInitializer;
 import dev.revere.commission.entities.Department;
 import dev.revere.commission.entities.Freelancer;
 import dev.revere.commission.services.RankSyncService;
