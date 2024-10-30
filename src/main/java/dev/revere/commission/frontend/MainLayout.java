@@ -1,46 +1,41 @@
 package dev.revere.commission.frontend;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.ComponentUtil;
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.H2;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.tabs.Tab;
-import com.vaadin.flow.component.tabs.Tabs;
-import com.vaadin.flow.component.tabs.TabsVariant;
-import com.vaadin.flow.router.PageTitle;
+import com.vaadin.flow.component.sidenav.SideNav;
+import com.vaadin.flow.component.sidenav.SideNavItem;
 import com.vaadin.flow.router.PreserveOnRefresh;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.router.RouterLink;
+import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.theme.lumo.Lumo;
 import dev.revere.commission.Constants;
 import dev.revere.commission.services.AuthService;
 
-import java.util.Optional;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @PreserveOnRefresh
 public class MainLayout extends AppLayout {
     private final AuthService m_authService;
-    private final Tabs m_menu;
     private final H2 m_title;
+    private final Map<String, SideNav> m_categoryNavs = new HashMap<>();
 
     public MainLayout(AuthService p_authService) {
         m_authService = p_authService;
         m_title = new H2();
 
-        final String js = "document.documentElement.setAttribute('theme', $0)";
-        getElement().executeJs(js, Lumo.DARK);
-
         setPrimarySection(Section.DRAWER);
         addToNavbar(true, createHeaderContent());
-        addToDrawer(createDrawerContent(m_menu = createMenu()));
+        addToDrawer(createDrawerContent());
     }
 
     private Component createHeaderContent() {
@@ -68,53 +63,68 @@ public class MainLayout extends AppLayout {
         return flexLayout;
     }
 
-    private Component createDrawerContent(final Tabs p_menu) {
-        final VerticalLayout layout = new VerticalLayout();
+    private Component createDrawerContent() {
+        VerticalLayout layout = new VerticalLayout();
         H2 logoLayout = new H2(Constants.PROJECT_NAME);
-        layout.add(logoLayout, p_menu);
+
+        getAuthorizedRoutes().forEach(route -> {
+            SideNav categoryNav = m_categoryNavs.computeIfAbsent(route.category(), category -> {
+                SideNav nav = new SideNav();
+                nav.setLabel(category);
+                return nav;
+            });
+
+            String path = RouteConfiguration.forSessionScope().getUrl(route.view());
+            SideNavItem navItem = new SideNavItem(route.name(), path);
+            navItem.setPrefixComponent(getIconForRoute(route.route()));
+            categoryNav.addItem(navItem);
+        });
+
+        layout.add(logoLayout);
+        m_categoryNavs.values().forEach(layout::add);
         return layout;
     }
 
-    private Tabs createMenu() {
-        final Tabs tabs = new Tabs();
-        tabs.setOrientation(Tabs.Orientation.VERTICAL);
-        tabs.addThemeVariants(TabsVariant.LUMO_MINIMAL);
-        tabs.setId("tabs");
-        tabs.add(createMenuItems());
-        return tabs;
+    private Component getIconForRoute(String route) {
+        return switch (route) {
+            case "dashboard" -> VaadinIcon.DASHBOARD.create();
+            case "commissions" -> VaadinIcon.CASH.create();
+            case "freelancers" -> VaadinIcon.GROUP.create();
+            case "accounts" -> VaadinIcon.USER.create();
+            default -> VaadinIcon.CHEVRON_RIGHT.create();
+        };
     }
 
-    private Component[] createMenuItems() {
+    private List<AuthService.AuthorizedRoute> getAuthorizedRoutes() {
         final AuthService.Role role = VaadinSession.getCurrent().getAttribute(AuthService.Role.class);
-        if (role == null) {
-            return new Component[]{};
-        }
-        return role
-                .getAuthorizedRoutes()
-                .stream()
-                .map(p_route -> createTab(p_route.name(), p_route.view()))
-                .toArray(Component[]::new);
-    }
-
-    private static Tab createTab(final String p_text, final Class<? extends Component> p_navigationTarget) {
-        final Tab tab = new Tab();
-        tab.add(new RouterLink(p_text, p_navigationTarget));
-        ComponentUtil.setData(tab, Class.class, p_navigationTarget);
-        return tab;
+        return role != null ? role.getAuthorizedRoutes() : List.of();
     }
 
     @Override
     protected void afterNavigation() {
         super.afterNavigation();
-        getTabForComponent(getContent()).ifPresent(m_menu::setSelectedTab);
         m_title.setText(getCurrentPageTitle());
-    }
 
-    private Optional<Tab> getTabForComponent(final Component p_component) {
-        return m_menu.getChildren()
-                .filter(p_tab -> ComponentUtil.getData(p_tab, Class.class)
-                        .equals(p_component.getClass()))
-                .findFirst().map(Tab.class::cast);
+        Class<? extends Component> currentViewClass = getContent().getClass().asSubclass(Component.class);
+        String currentPath = RouteConfiguration.forSessionScope().getUrl(currentViewClass);
+
+        m_categoryNavs.values().forEach(sideNav ->
+                sideNav.getItems().forEach(item -> {
+                    String itemPath = item.getPath();
+                    String originalLabel = getAuthorizedRoutes()
+                            .stream()
+                            .filter(route -> RouteConfiguration.forSessionScope().getUrl(route.view()).equals(itemPath))
+                            .map(AuthService.AuthorizedRoute::name)
+                            .findFirst()
+                            .orElse("");
+
+                    if (itemPath.equals(currentPath)) {
+                        item.setLabel(originalLabel);
+                    } else {
+                        item.setLabel(originalLabel);
+                    }
+                })
+        );
     }
 
     private String getCurrentPageTitle() {

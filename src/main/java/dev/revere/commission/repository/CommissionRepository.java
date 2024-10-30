@@ -2,8 +2,10 @@ package dev.revere.commission.repository;
 
 import dev.revere.commission.entities.Commission;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -62,6 +64,14 @@ public interface CommissionRepository extends MongoRepository<Commission, String
      * @return The Commission object associated with the given payment link ID.
      */
     Optional<Commission> findCommissionByStripePaymentLinkId(String stripePaymentLinkId);
+
+    /**
+     * Retrieve a list of commissions ordered by creation date in descending order.
+     *
+     * @param pageable The pagination information.
+     * @return A list of commissions ordered by creation date in descending order.
+     */
+    List<Commission> findByOrderByCreatedAtDesc(Pageable pageable);
 
     /**
      * Retrieve the total amount of all commissions

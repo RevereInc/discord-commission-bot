@@ -19,35 +19,37 @@ public interface AuthService {
 
     boolean isAuthorized();
 
+    String getCurrentUsername();
+
     @Getter
     @AllArgsConstructor
     enum Role {
         SUPPORT(
                 List.of(
-                        new AuthorizedRoute("dashboard", "Dashboard", DashboardView.class),
-                        new AuthorizedRoute("commissions", "Commissions", CommissionsView.class)
+                        new AuthorizedRoute("dashboard", "Dashboard", DashboardView.class, "General"),
+                        new AuthorizedRoute("commissions", "Commissions", CommissionsView.class, "General")
                 )
         ),
         ADMIN(
                 List.of(
-                        new AuthorizedRoute("dashboard", "Dashboard", DashboardView.class),
-                        new AuthorizedRoute("commissions", "Commissions", CommissionsView.class),
-                        new AuthorizedRoute("freelancers", "Freelancers", FreelancersView.class)
+                        new AuthorizedRoute("dashboard", "Dashboard", DashboardView.class, "General"),
+                        new AuthorizedRoute("commissions", "Commissions", CommissionsView.class, "General"),
+                        new AuthorizedRoute("freelancers", "Freelancers", FreelancersView.class, "Admin")
                 )
         ),
         OWNER(
                 List.of(
-                        new AuthorizedRoute("dashboard", "Dashboard", DashboardView.class),
-                        new AuthorizedRoute("commissions", "Commissions", CommissionsView.class),
-                        new AuthorizedRoute("freelancers", "Freelancers", FreelancersView.class),
-                        new AuthorizedRoute("accounts", "Accounts", AccountManagementView.class)
+                        new AuthorizedRoute("dashboard", "Dashboard", DashboardView.class, "General"),
+                        new AuthorizedRoute("commissions", "Commissions", CommissionsView.class, "General"),
+                        new AuthorizedRoute("freelancers", "Freelancers", FreelancersView.class, "Admin"),
+                        new AuthorizedRoute("accounts", "Accounts", AccountManagementView.class, "Admin")
                 )
         );
 
         private final List<AuthorizedRoute> m_authorizedRoutes;
     }
 
-    record AuthorizedRoute(String route, String name, Class<? extends Component> view) {}
+    record AuthorizedRoute(String route, String name, Class<? extends Component> view, String category) {}
 
     class AuthException extends Exception {
         public AuthException(String message) {

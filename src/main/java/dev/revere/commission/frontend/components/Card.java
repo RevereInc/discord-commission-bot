@@ -5,22 +5,21 @@ import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H3;
 
-@CssImport(value = "./styles/cards.css")
+@CssImport("./styles/components/cards.css")
 public class Card extends Div {
     private final Div m_container;
 
     public Card(final String p_title) {
         m_container = new Div();
 
-
         H3 h3 = new H3(p_title);
         h3.getStyle().set("margin-bottom", "8px");
 
         m_container.add(h3);
-        m_container.setClassName("container");
+        m_container.addClassName("container");
 
         add(m_container);
-        setClassName("card");
+        addClassName("stat-card");
         setWidthFull();
     }
 

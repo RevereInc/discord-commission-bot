@@ -1,2 +1,2 @@
 # discord-bot
- Flux Comission Discord Bot with Spring boot
+ Tonic Commission Discord Bot with Spring boot

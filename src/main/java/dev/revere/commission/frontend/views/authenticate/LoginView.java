@@ -6,7 +6,6 @@ import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.FlexLayout;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.theme.lumo.Lumo;
 import dev.revere.commission.Constants;
 import dev.revere.commission.services.AuthService;
 import lombok.extern.slf4j.Slf4j;
@@ -24,9 +23,6 @@ public class LoginView extends FlexLayout {
 
         setJustifyContentMode(JustifyContentMode.CENTER);
         setAlignItems(Alignment.CENTER);
-
-        final String js = "document.documentElement.setAttribute('theme', $0)";
-        getElement().executeJs(js, Lumo.DARK);
 
         LoginForm loginForm = new LoginForm();
         loginForm.setForgotPasswordButtonVisible(false);

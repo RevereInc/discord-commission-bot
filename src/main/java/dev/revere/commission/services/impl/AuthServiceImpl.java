@@ -47,6 +47,8 @@ public class AuthServiceImpl implements AuthService {
         }
 
         VaadinSession.getCurrent().setAttribute(Role.class, account.getRole());
+        VaadinSession.getCurrent().setAttribute("username", account.getUsername());
+
         createRoutes(account.getRole());
 
         UI.getCurrent().navigate("dashboard");
@@ -61,6 +63,11 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public boolean isAuthorized() {
         return VaadinSession.getCurrent().getAttribute(Role.class) != null;
+    }
+
+    @Override
+    public String getCurrentUsername() {
+        return VaadinSession.getCurrent().getAttribute("username").toString();
     }
 
     private void createRoutes(Role p_role) {

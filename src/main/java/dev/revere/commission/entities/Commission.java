@@ -2,10 +2,12 @@ package dev.revere.commission.entities;
 
 import dev.revere.commission.services.PaymentService;
 import lombok.*;
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 
 /**
@@ -25,6 +27,9 @@ import java.util.HashMap;
 public class Commission implements Serializable {
     @Id
     private String id;
+
+    // The date and time the commission was created
+    private LocalDateTime createdAt;
 
     // The ID of the user associated with the commission
     private long userId;
@@ -87,6 +92,7 @@ public class Commission implements Serializable {
     public String toString() {
         return "Commission{" +
                 "id='" + id +
+                ", createdAt=" + createdAt +
                 ", userId=" + userId +
                 ", username='" + client +
                 ", category='" + category +

@@ -13,6 +13,8 @@ import net.dv8tion.jda.api.entities.channel.concrete.Category;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -36,6 +38,7 @@ public class CommissionServiceImpl implements CommissionService {
     public Commission createCommission(Member p_member, String p_string, String p_description, String p_quote) {
         Commission commission = new Commission();
         commission.setUserId(p_member.getIdLong());
+        commission.setCreatedAt(LocalDateTime.now());
         commission.setClient(p_member.getUser().getName());
         commission.setCategory(p_string);
         commission.setDescription(p_description);
