@@ -1,10 +1,7 @@
 package dev.revere.commission.services;
 
 import com.vaadin.flow.component.Component;
-import dev.revere.commission.frontend.views.AccountManagementView;
-import dev.revere.commission.frontend.views.CommissionsView;
-import dev.revere.commission.frontend.views.DashboardView;
-import dev.revere.commission.frontend.views.FreelancersView;
+import dev.revere.commission.frontend.views.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -34,6 +31,7 @@ public interface AuthService {
                 List.of(
                         new AuthorizedRoute("dashboard", "Dashboard", DashboardView.class, "General"),
                         new AuthorizedRoute("commissions", "Commissions", CommissionsView.class, "General"),
+                        new AuthorizedRoute("departments", "Departments", DepartmentsView.class, "Admin"),
                         new AuthorizedRoute("freelancers", "Freelancers", FreelancersView.class, "Admin")
                 )
         ),
@@ -42,6 +40,7 @@ public interface AuthService {
                         new AuthorizedRoute("dashboard", "Dashboard", DashboardView.class, "General"),
                         new AuthorizedRoute("commissions", "Commissions", CommissionsView.class, "General"),
                         new AuthorizedRoute("freelancers", "Freelancers", FreelancersView.class, "Admin"),
+                        new AuthorizedRoute("departments", "Departments", DepartmentsView.class, "Admin"),
                         new AuthorizedRoute("accounts", "Accounts", AccountManagementView.class, "Admin")
                 )
         );

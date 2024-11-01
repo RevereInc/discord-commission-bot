@@ -1,14 +1,15 @@
 package dev.revere.commission.discord.command;
 
-import dev.revere.commission.discord.command.impl.*;
+import com.jagrosh.jdautilities.command.CommandClient;
+import com.jagrosh.jdautilities.command.CommandClientBuilder;
+import dev.revere.commission.discord.command.impl.ProfileCommand;
+import dev.revere.commission.discord.command.impl.TonicInfoCommand;
 import dev.revere.commission.discord.command.impl.admin.*;
 import dev.revere.commission.discord.command.impl.freelancer.CardCommand;
 import dev.revere.commission.discord.command.impl.freelancer.SetPortfolio;
 import dev.revere.commission.discord.command.impl.freelancer.SyncCommand;
 import dev.revere.commission.discord.command.impl.moderation.BanCommand;
 import dev.revere.commission.discord.command.impl.moderation.KickCommand;
-import com.jagrosh.jdautilities.command.CommandClient;
-import com.jagrosh.jdautilities.command.CommandClientBuilder;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.OnlineStatus;
@@ -33,6 +34,7 @@ public class CommandHandler {
     private final RemoveDepartmentCommand m_removeServiceCommand;
     private final RemoveFreelancerCommand m_removeFreelancerCommand;
     private final DeleteDepartmentCommand m_deleteDepartmentCommand;
+    private final CreateStripeAccountCommand m_createStripeAccountCommand;
     private final RegenerateInvoiceCommand m_regenerateInvoiceCommand;
     private final CardCommand m_cardCommand;
     private final SyncCommand m_syncCommand;
@@ -55,7 +57,9 @@ public class CommandHandler {
                         m_supportCommand, m_removeFreelancerCommand, m_createDepartmentCommand, m_tonicInfoCommand,
                         m_addFreelancerCommand, m_profileCommand, m_addDepartmentCommand,
                         m_banCommand, m_kickCommand, m_removeServiceCommand,
-                        m_cardCommand, m_syncCommand, m_setPortfolioCommand, m_deleteDepartmentCommand, m_regenerateInvoiceCommand
+                        m_cardCommand, m_syncCommand, m_setPortfolioCommand,
+                        m_deleteDepartmentCommand, m_regenerateInvoiceCommand,
+                        m_createStripeAccountCommand
                 )
                 .build();
     }

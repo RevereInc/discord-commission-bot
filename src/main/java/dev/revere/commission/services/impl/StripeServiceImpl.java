@@ -1,27 +1,23 @@
 package dev.revere.commission.services.impl;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import dev.revere.commission.data.InvoiceDetails;
-import dev.revere.commission.data.PaymentStatus;
-import dev.revere.commission.data.PaymentSummary;
-import dev.revere.commission.data.WebhookPayload;
+import com.stripe.Stripe;
+import com.stripe.exception.StripeException;
+import com.stripe.model.*;
+import com.stripe.param.*;
+import dev.revere.commission.data.StripeInvoice;
 import dev.revere.commission.entities.Commission;
-import dev.revere.commission.exception.PaymentException;
 import dev.revere.commission.repository.CommissionRepository;
 import dev.revere.commission.services.PaymentService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.*;
 import org.springframework.stereotype.Service;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.List;
-import java.util.Map;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.ArrayList;
 
 /**
  * @author Remi
@@ -30,192 +26,184 @@ import java.util.Map;
  */
 @Slf4j
 @Service
-@Qualifier("stripe")
 public class StripeServiceImpl implements PaymentService {
-    private final RestTemplate restTemplate;
-    private final ObjectMapper objectMapper;
-    private final String apiKey;
+    private final CommissionRepository commissionRepository;
 
-    private static final String STRIPE_PAYMENT_LINKS_API = "https://api.stripe.com/v1/payment_links";
-    private final CommissionRepository m_commissionRepository;
-
-    public StripeServiceImpl(@Value("${stripe.api-key}") String apiKey, CommissionRepository commissionRepository) {
-        this.restTemplate = new RestTemplate();
-        this.objectMapper = new ObjectMapper();
-        this.apiKey = apiKey;
-        this.m_commissionRepository = commissionRepository;
+    public StripeServiceImpl(
+            @Value("${stripe.api-key}") String apiKey,
+            CommissionRepository commissionRepository
+    ) {
+        this.commissionRepository = commissionRepository;
+        Stripe.apiKey = apiKey;
     }
 
     @Override
-    public String createInvoice(Commission commission, double amount, String description) throws PaymentException {
+    public StripeInvoice createInvoice(Commission commission, String email, String quote) throws StripeException {
         try {
-            MultiValueMap<String, String> paymentData = new LinkedMultiValueMap<>();
+            String customerId = getOrCreateCustomer(commission, email);
 
-            paymentData.add("line_items[0][price]", createPrice(amount, description));
-            paymentData.add("line_items[0][quantity]", "1");
+            InvoiceCreateParams invoiceParams = InvoiceCreateParams.builder()
+                    .setCustomer(customerId)
+                    .setAutoAdvance(false)
+                    .setCollectionMethod(InvoiceCreateParams.CollectionMethod.SEND_INVOICE)
+                    .setDaysUntilDue(30L)
+                    .setDescription(String.format("Commission Invoice for %s - %s",
+                            commission.getClient(), commission.getCategory()))
+                    .putMetadata("commission_id", commission.getId())
+                    .putMetadata("discord_user_id", String.valueOf(commission.getUserId()))
+                    .build();
 
-            paymentData.add("metadata[commission_id]", commission.getId());
-            paymentData.add("metadata[client_id]", String.valueOf(commission.getUserId()));
+            Invoice stripeInvoice = Invoice.create(invoiceParams);
 
-            HttpHeaders headers = new HttpHeaders();
-            headers.setBearerAuth(apiKey);
-            headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+            InvoiceItemCreateParams itemParams = InvoiceItemCreateParams.builder()
+                    .setCustomer(customerId)
+                    .setInvoice(stripeInvoice.getId())
+                    .setAmount((long) (Double.parseDouble(quote) * 100))
+                    .setCurrency("usd")
+                    .setDescription(commission.getCategory() + " Commission Service")
+                    .build();
 
-            HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(paymentData, headers);
-            ResponseEntity<Map> response = restTemplate.postForEntity(STRIPE_PAYMENT_LINKS_API, request, Map.class);
+            InvoiceItem.create(itemParams);
 
-            if (response.getStatusCode().is2xxSuccessful()) {
-                Map<String, Object> body = response.getBody();
-                String paymentLinkId = (String) body.get("id");
-                String fullUrl = (String) body.get("url");
-                String publicId = extractIdFromUrl(fullUrl);
-                return publicId + "|" + paymentLinkId;
-            } else {
-                log.error("Failed to create payment link. Status code: {} Response: {}",
-                        response.getStatusCode(), response.getBody());
-                throw new PaymentException("Failed to create payment link: " +
-                        response.getBody().get("error"));
+            Invoice finalizedInvoice = stripeInvoice.finalizeInvoice();
+
+            StripeInvoice invoice = StripeInvoice.builder()
+                    .id(finalizedInvoice.getId())
+                    .createdAt(LocalDateTime.ofInstant(
+                            Instant.ofEpochSecond(finalizedInvoice.getCreated()),
+                            ZoneId.systemDefault()))
+                    .dueAt(LocalDateTime.ofInstant(
+                            Instant.ofEpochSecond(finalizedInvoice.getDueDate()),
+                            ZoneId.systemDefault()))
+                    .amountPaid(finalizedInvoice.getAmountPaid().doubleValue() / 100)
+                    .amountRemaining(finalizedInvoice.getAmountRemaining().doubleValue() / 100)
+                    .status(StripeInvoice.InvoiceStatus.fromStripeStatus(finalizedInvoice.getStatus()))
+                    .paymentLink(finalizedInvoice.getHostedInvoiceUrl())
+                    .clientId(String.valueOf(commission.getUserId()))
+                    .clientName(commission.getClient())
+                    .clientEmail(email)
+                    .title(commission.getCategory() + " Commission Service")
+                    .memo(commission.getDescription())
+                    .payments(new ArrayList<>())
+                    .build();
+
+            commission.setInvoice(invoice);
+            commissionRepository.save(commission);
+
+            return invoice;
+        } catch (StripeException e) {
+            log.error("Failed to create Stripe invoice", e);
+            throw e;
+        }
+    }
+
+    private String getOrCreateCustomer(Commission commission, String email) throws StripeException {
+        CustomerSearchParams params = CustomerSearchParams.builder()
+                .setQuery("metadata['discord_user_id']:'" + commission.getUserId() + "'")
+                .build();
+        CustomerSearchResult searchResult = Customer.search(params);
+
+        if (!searchResult.getData().isEmpty()) {
+            Customer existingCustomer = searchResult.getData().get(0);
+            if (existingCustomer.getEmail() == null || existingCustomer.getEmail().isEmpty()) {
+                CustomerUpdateParams updateParams = CustomerUpdateParams.builder()
+                        .setEmail(email)
+                        .build();
+                existingCustomer.update(updateParams);
             }
-        } catch (Exception e) {
-            log.error("Exception while creating payment link", e);
-            throw new PaymentException("Failed to create payment link", e);
+            return existingCustomer.getId();
+        }
+
+        CustomerCreateParams customerParams = CustomerCreateParams.builder()
+                .setName(commission.getClient())
+                .setEmail(email)
+                .setDescription("Discord User: " + commission.getClient())
+                .putMetadata("discord_user_id", String.valueOf(commission.getUserId()))
+                .build();
+
+        Customer customer = Customer.create(customerParams);
+        return customer.getId();
+    }
+
+    @Override
+    public StripeInvoice getInvoiceDetails(String invoiceId) throws StripeException {
+        try {
+            Invoice stripeInvoice = Invoice.retrieve(invoiceId);
+            return handleInvoicePayment(stripeInvoice);
+        } catch (StripeException e) {
+            log.error("Failed to get Stripe invoice details", e);
+            throw e;
         }
     }
 
-    private String extractIdFromUrl(String fullUrl) {
-        String[] parts = fullUrl.split("/");
-        return parts[parts.length - 1];
-    }
-
-    private String createPrice(double amount, String description) throws PaymentException {
+    @Override
+    public StripeInvoice handleInvoicePayment(Invoice stripeInvoice) throws StripeException {
         try {
-            String createPriceUrl = "https://api.stripe.com/v1/prices";
-            MultiValueMap<String, String> priceData = new LinkedMultiValueMap<>();
-            priceData.add("unit_amount", String.valueOf((int)(amount * 100)));
-            priceData.add("currency", "usd");
-            priceData.add("product_data[name]", description);
+            Commission commission = commissionRepository.findCommissionByInvoiceId(stripeInvoice.getId())
+                    .orElseThrow(() -> new RuntimeException("Commission not found for invoice: " + stripeInvoice.getId()));
 
-            HttpHeaders headers = new HttpHeaders();
-            headers.setBearerAuth(apiKey);
-            headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+            StripeInvoice invoice = commission.getInvoice();
+            invoice.setAmountPaid(stripeInvoice.getAmountPaid().doubleValue() / 100);
+            invoice.setAmountRemaining(stripeInvoice.getAmountRemaining().doubleValue() / 100);
+            invoice.setStatus(StripeInvoice.InvoiceStatus.fromStripeStatus(stripeInvoice.getStatus()));
 
-            HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(priceData, headers);
-            ResponseEntity<Map> priceResponse = restTemplate.postForEntity(createPriceUrl, request, Map.class);
-
-            if (priceResponse.getStatusCode().is2xxSuccessful()) {
-                return (String) priceResponse.getBody().get("id");
-            } else {
-                throw new PaymentException("Failed to create price: " + priceResponse.getBody().toString());
+            if (stripeInvoice.getPaid()) {
+                invoice.setPaidAt(LocalDateTime.ofInstant(
+                        Instant.ofEpochSecond(stripeInvoice.getStatusTransitions().getPaidAt()),
+                        ZoneId.systemDefault()
+                ));
             }
-        } catch (Exception e) {
-            log.error("Exception while creating price", e);
-            throw new PaymentException("Failed to create price", e);
-        }
-    }
 
-    @Override
-    public InvoiceDetails getInvoiceDetails(String p_paymentLinkId) throws PaymentException {
-        try {
-            HttpHeaders headers = new HttpHeaders();
-            headers.setBearerAuth(apiKey);
-
-            String fullUrl = STRIPE_PAYMENT_LINKS_API + "/" + p_paymentLinkId;
-            log.debug("Attempting to fetch payment link details from URL: {}", fullUrl);
-
-            HttpEntity<Void> request = new HttpEntity<>(headers);
-            ResponseEntity<Map> response = restTemplate.exchange(fullUrl, HttpMethod.GET, request, Map.class);
-
-            if (response.getStatusCode().is2xxSuccessful()) {
-                Map<String, Object> body = response.getBody();
-                log.debug("Received successful response: {}", body);
-
-                List<Map<String, Object>> lineItems;
-                if (body.containsKey("line_items")) {
-                    lineItems = (List<Map<String, Object>>) body.get("line_items");
-                } else {
-                    String lineItemsUrl = fullUrl + "/line_items";
-                    log.debug("Fetching line items from URL: {}", lineItemsUrl);
-                    ResponseEntity<Map> lineItemsResponse = restTemplate.exchange(lineItemsUrl, HttpMethod.GET, request, Map.class);
-                    Map<String, Object> lineItemsBody = lineItemsResponse.getBody();
-                    lineItems = (List<Map<String, Object>>) lineItemsBody.get("data");
-                }
-
-                double totalAmount = 0;
-                for (Map<String, Object> item : lineItems) {
-                    Map<String, Object> price = (Map<String, Object>) item.get("price");
-                    int unitAmount = (int) price.get("unit_amount");
-                    int quantity = (int) item.get("quantity");
-                    totalAmount += (unitAmount * quantity) / 100.0;
-                }
-
-                boolean isActive = (boolean) body.get("active");
-                PaymentStatus paymentStatus = isActive ? PaymentStatus.PENDING : PaymentStatus.FAILED;
-
-                return new InvoiceDetails(p_paymentLinkId, totalAmount, paymentStatus);
-            } else {
-                log.error("Failed to get payment link details for ID: {}. Status code: {}", p_paymentLinkId, response.getStatusCode());
-                throw new PaymentException("Failed to get payment link details: " + response.getBody().get("error"));
+            if (stripeInvoice.getPaymentIntent() != null) {
+                PaymentIntent paymentIntent = PaymentIntent.retrieve(stripeInvoice.getPaymentIntent());
+                invoice.getPayments().add(new StripeInvoice.Payment(
+                        paymentIntent.getId(),
+                        LocalDateTime.ofInstant(
+                                Instant.ofEpochSecond(paymentIntent.getCreated()),
+                                ZoneId.systemDefault()),
+                        paymentIntent.getAmount().doubleValue() / 100,
+                        paymentIntent.getPaymentMethod()
+                ));
             }
-        } catch (HttpClientErrorException.NotFound e) {
-            log.error("Payment link not found for ID: {}. Full response: {}", p_paymentLinkId, e.getResponseBodyAsString());
-            throw new PaymentException("No such payment link: " + p_paymentLinkId);
-        } catch (Exception e) {
-            log.error("Failed to get payment link details", e);
-            throw new PaymentException("Failed to get payment link details", e);
+
+            commission.setInvoice(invoice);
+            commissionRepository.save(commission);
+
+            return invoice;
+        } catch (StripeException e) {
+            log.error("Failed to handle Stripe invoice payment", e);
+            throw e;
         }
     }
 
     @Override
-    public PaymentSummary handlePaymentWebhook(WebhookPayload p_webhookPayload) throws PaymentException {
+    public String[] createStripeAccount(String countryCode) {
         try {
-            JsonNode webhookEvent = objectMapper.readTree(p_webhookPayload.webhookEvent());
-            String eventType = webhookEvent.path("type").asText();
+            Account account = Account.create(
+                    AccountCreateParams.builder()
+                            .setType(AccountCreateParams.Type.EXPRESS)
+                            .setCountry(countryCode)
+                            .setCapabilities(
+                                    AccountCreateParams.Capabilities.builder()
+                                            .setTransfers(AccountCreateParams.Capabilities.Transfers.builder()
+                                                    .setRequested(true)
+                                                    .build())
+                                            .build())
+                            .build()
+            );
 
-            log.info("Received Stripe webhook event type: {}", eventType);
+            AccountLinkCreateParams accountLinkParams = AccountLinkCreateParams.builder()
+                    .setAccount(account.getId())
+                    .setType(AccountLinkCreateParams.Type.ACCOUNT_ONBOARDING)
+                    .setRefreshUrl("https://discord.gg/tonicconsulting")
+                    .setReturnUrl("https://discord.gg/tonicconsulting")
+                    .build();
 
-            return switch (eventType) {
-                case "checkout.session.completed" -> handleCheckoutSessionCompleted(webhookEvent);
-                default -> {
-                    log.warn("Unhandled Stripe webhook event type: {}", eventType);
-                    yield null;
-                }
-            };
+            AccountLink accountLink = AccountLink.create(accountLinkParams);
+            return new String[]{account.getId(), accountLink.getUrl()};
         } catch (Exception e) {
-            log.error("Failed to process Stripe webhook", e);
-            throw new PaymentException("Failed to process Stripe webhook", e);
+            log.error("Failed to create Stripe account", e);
+            return null;
         }
-    }
-
-    private PaymentSummary handleCheckoutSessionCompleted(JsonNode webhookEvent) {
-        JsonNode data = webhookEvent.path("data").path("object");
-        String paymentLinkId = data.path("payment_link").asText();
-        double amountTotal = data.path("amount_total").asDouble() / 100.0;
-
-        return new PaymentSummary(this.getServiceName(), paymentLinkId, amountTotal, amountTotal, true);
-    }
-
-    @Override
-    public void updateCommissionWithInvoiceDetails(Commission p_commission, String p_invoiceId) {
-        p_commission.setPaymentService(getServiceName());
-        p_commission.setPaymentPending(true);
-
-        String[] idParts = p_invoiceId.split("\\|");
-        if (idParts.length == 2) {
-            p_commission.setInvoiceId(idParts[0]);
-            p_commission.setStripePaymentLinkId(idParts[1]);
-        } else {
-            p_commission.setInvoiceId(p_invoiceId);
-        }
-        m_commissionRepository.save(p_commission);
-    }
-
-    @Override
-    public String getPaymentLink(String p_invoiceId) {
-        return "https://buy.stripe.com/" + p_invoiceId;
-    }
-
-    @Override
-    public String getServiceName() {
-        return "Stripe";
     }
 }

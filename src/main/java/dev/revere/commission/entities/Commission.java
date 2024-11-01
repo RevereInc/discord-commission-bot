@@ -1,5 +1,6 @@
 package dev.revere.commission.entities;
 
+import dev.revere.commission.data.StripeInvoice;
 import dev.revere.commission.services.PaymentService;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
@@ -46,15 +47,6 @@ public class Commission implements Serializable {
     // The description of the commission
     private String description;
 
-    // The ID of the invoice associated with the commission
-    private String invoiceId;
-
-    // The ID of the payment link associated with the commission (for Stripe)
-    private String stripePaymentLinkId;
-
-    // The payment service used for the commission
-    private String paymentService;
-
     // The freelancer associated with the commission
     private String freelancer;
 
@@ -76,8 +68,8 @@ public class Commission implements Serializable {
     // Mark the commission as finished
     private State state;
 
-    // Check if the payment is still pending
-    private boolean paymentPending;
+    // The payment service used for the commission
+    private StripeInvoice invoice;
 
     private HashMap<Long, Long> clientMessages = new HashMap<>();
     private HashMap<Long, Long> freelancerMessages = new HashMap<>();
@@ -86,6 +78,22 @@ public class Commission implements Serializable {
 
     public String getFormattedQuote() {
         return "$" + String.format("%.2f", Double.parseDouble(quote));
+    }
+
+    public boolean isInvoicePaid() {
+        return hasInvoice() && invoice.isPaid();
+    }
+
+    public double getInvoiceAmountPaid() {
+        return hasInvoice() ? invoice.getAmountPaid() : 0.0;
+    }
+
+    public String getInvoicePaymentLink() {
+        return hasInvoice() ? invoice.getPaymentLink() : null;
+    }
+
+    public boolean hasInvoice() {
+        return invoice != null;
     }
 
     @Override
@@ -97,8 +105,6 @@ public class Commission implements Serializable {
                 ", username='" + client +
                 ", category='" + category +
                 ", quote='" + quote +
-                ", invoiceId='" + invoiceId +
-                ", paymentService='" + paymentService +
                 ", description='" + description +
                 ", freelancer='" + freelancer +
                 ", freelancerId=" + freelancerId +
@@ -107,11 +113,16 @@ public class Commission implements Serializable {
                 ", interestedFreelancers=" + interestedFreelancers +
                 ", declinedFreelancers=" + declinedFreelancers +
                 ", state=" + state +
-                ", paymentPending=" + paymentPending +
                 '}';
     }
 
     public enum State implements Serializable {
         COMPLETED, IN_PROGRESS, PENDING, CANCELLED;
+
+        @Override
+        public String toString() {
+            String name = name().replace("_", " ").toLowerCase();
+            return Character.toUpperCase(name.charAt(0)) + name.substring(1);
+        }
     }
 }

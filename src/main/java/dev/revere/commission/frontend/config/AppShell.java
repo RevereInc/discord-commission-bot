@@ -9,6 +9,6 @@ import com.vaadin.flow.theme.lumo.Lumo;
  * @project Comission-Discord-Bot-SpringBoot
  * @date 10/30/2024
  */
-@Theme(variant = Lumo.DARK)
+@Theme(value = "custom")
 public class AppShell implements AppShellConfigurator {
 }

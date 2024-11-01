@@ -1,12 +1,15 @@
 package dev.revere.commission.discord.event;
 
+import com.stripe.exception.StripeException;
 import dev.revere.commission.Constants;
+import dev.revere.commission.data.StripeInvoice;
 import dev.revere.commission.discord.utility.CommissionData;
 import dev.revere.commission.discord.utility.TonicEmbedBuilder;
 import dev.revere.commission.entities.Commission;
 import dev.revere.commission.entities.Department;
 import dev.revere.commission.repository.CommissionRepository;
 import dev.revere.commission.services.CommissionService;
+import dev.revere.commission.services.PaymentService;
 import lombok.AllArgsConstructor;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Member;
@@ -14,11 +17,9 @@ import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
-import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.interactions.components.buttons.ButtonStyle;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.awt.*;
@@ -35,6 +36,7 @@ import java.util.Objects;
 public class ModalSubmitEvent extends ListenerAdapter {
     private final CommissionRepository m_commissionRepository;
     private final CommissionService m_commissionService;
+    private final PaymentService m_paymentService;
 
     private final CommissionMessageEvent m_commissionMessageEvent;
 
@@ -130,6 +132,64 @@ public class ModalSubmitEvent extends ListenerAdapter {
                             .queue();
 
                     p_modalInteractionEvent.reply(TonicEmbedBuilder.sharedMessageEmbed("The new quote has been delivered to the client")).setEphemeral(true).queue();
+                }
+
+                if (modalId.startsWith("request-payment-modal-")) {
+                    String commissionId = modalId.substring("request-payment-modal-".length());
+                    Commission commission = m_commissionRepository.findCommissionById(commissionId);
+                    String email = p_modalInteractionEvent.getValue("email").getAsString();
+
+                    try {
+                        StripeInvoice invoice;
+                        if (commission.hasInvoice()) {
+                            invoice = commission.getInvoice();
+                        } else {
+                            invoice = m_paymentService.createInvoice(commission, email, commission.getQuote());
+                            commission.setInvoice(invoice);
+                            m_commissionRepository.save(commission);
+                        }
+
+                        String totalAmount = commission.getFormattedQuote();
+                        String amountPaid = invoice.getFormattedAmountPaid();
+                        String amountRemaining = invoice.getFormattedAmountRemaining();
+                        String status = invoice.getStatus().toString();
+                        double progressPercentage = invoice.getProgressPercentage(commission);
+
+                        String description = String.format(
+                                """
+                                        ### <:1270455353620041829:1299806081140133898> Invoice Details
+                                        - **Status:** %s
+                                        - **Total Amount:** %s
+                                        - **Amount Paid:** %s
+                                        - **Amount Remaining:** %s
+                                        - **Progress:** %.2f%%
+                                        - **Payment Link:** %s
+                                        ### <:1270673327098167347:1299806215915700315> Payment Service
+                                        ```
+                                        Stripe
+                                        ```""",
+                                status,
+                                totalAmount,
+                                amountPaid,
+                                amountRemaining,
+                                progressPercentage,
+                                invoice.getPaymentLink()
+                        );
+
+                        TonicEmbedBuilder embed = new TonicEmbedBuilder()
+                                .setTitle("Payment Invoice")
+                                .setDescription(description)
+                                .setColor(Color.decode("#2b2d31"))
+                                .setTimeStamp(Instant.now());
+
+                        p_modalInteractionEvent.reply(embed.build())
+                                .queue();
+                    } catch (StripeException e) {
+                        e.printStackTrace();
+                        p_modalInteractionEvent.reply("Failed to create or retrieve invoice details. Please try again later.")
+                                .setEphemeral(true)
+                                .queue();
+                    }
                 }
             }
         }

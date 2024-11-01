@@ -1,5 +1,7 @@
 package dev.revere.commission.frontend.views.authenticate;
 
+import com.vaadin.flow.component.html.H1;
+import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.login.LoginForm;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
@@ -21,8 +23,11 @@ public class LoginView extends FlexLayout {
         addClassName("login-view");
         setSizeFull();
 
+        setFlexDirection(FlexDirection.COLUMN);
         setJustifyContentMode(JustifyContentMode.CENTER);
         setAlignItems(Alignment.CENTER);
+
+        H1 title = new H1(Constants.PROJECT_NAME);
 
         LoginForm loginForm = new LoginForm();
         loginForm.setForgotPasswordButtonVisible(false);
@@ -34,6 +39,7 @@ public class LoginView extends FlexLayout {
             }
         });
 
+        add(title);
         add(loginForm);
     }
 }

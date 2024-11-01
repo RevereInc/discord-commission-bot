@@ -27,6 +27,8 @@ public final class Constants {
     public static final String TITLE_DASHBOARD = "Dashboard | " + PROJECT_NAME;
     public static final String TITLE_COMMISSIONS = "Commissions | " + PROJECT_NAME;
     public static final String TITLE_FREELANCERS = "Freelancers | " + PROJECT_NAME;
+    public static final String TITLE_DEPARTMENTS = "Departments | " + PROJECT_NAME;
+
 
     public static final String PATH_LOGIN = "login";
     public static final String PATH_LOGOUT = "logout";
@@ -34,6 +36,7 @@ public final class Constants {
     public static final String PATH_DASHBOARD = "dashboard";
     public static final String PATH_COMMISSIONS = "commissions";
     public static final String PATH_FREELANCERS = "freelancers";
+    public static final String PATH_DEPARTMENTS = "departments";
 
 
 }

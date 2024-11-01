@@ -67,12 +67,12 @@ public class CommissionsView extends VerticalLayout {
         m_commissionGrid.addColumn(Commission::getFormattedQuote).setHeader("Quote");
         m_commissionGrid.addColumn(Commission::getState).setHeader("State");
         m_commissionGrid.addColumn(commission -> {
-            if (commission.getState() == Commission.State.CANCELLED && commission.isPaymentPending()) {
+            if (commission.getState() == Commission.State.CANCELLED) {
                 return "Cancelled";
-            } else if (commission.isPaymentPending()) {
-                return "Unpaid";
+            } else if (commission.getInvoice() == null) {
+                return "No Invoice";
             } else {
-                return "Paid";
+                return commission.getInvoice().isPaid() ? "Paid" : "Unpaid";
             }
         }).setHeader("Payment");
 

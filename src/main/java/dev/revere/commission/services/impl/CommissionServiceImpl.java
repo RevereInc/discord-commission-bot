@@ -13,7 +13,6 @@ import net.dv8tion.jda.api.entities.channel.concrete.Category;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
@@ -43,9 +42,6 @@ public class CommissionServiceImpl implements CommissionService {
         commission.setCategory(p_string);
         commission.setDescription(p_description);
         commission.setQuote(p_quote);
-        commission.setInvoiceId(null);
-        commission.setPaymentService(null);
-        commission.setPaymentPending(true);
         commission.setState(Commission.State.PENDING);
         commission.setInterestedFreelancers(new HashMap<>());
         commission.setDeclinedFreelancers(new HashMap<>());
@@ -182,18 +178,6 @@ public class CommissionServiceImpl implements CommissionService {
         p_commission.setState(Commission.State.COMPLETED);
         commissionRepository.save(p_commission);
     }
-
-
-    @Override
-    public void receivePayment(Commission p_commission, Member p_member) {
-        if (p_commission == null) {
-            throw new IllegalArgumentException("Commission does not exist.");
-        }
-
-        p_commission.setPaymentPending(false);
-        commissionRepository.save(p_commission);
-    }
-
 
     @Override
     public void cancelCommission(Commission p_commission) {

@@ -1,7 +1,9 @@
 package dev.revere.commission.services;
 
 import dev.revere.commission.entities.Department;
+import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Role;
+import net.dv8tion.jda.api.sharding.ShardManager;
 
 /**
  * Service interface for managing departments.
@@ -20,11 +22,27 @@ public interface DepartmentService {
     void createDepartment(Department department);
 
     /**
+     * Create a new department in a guild.
+     *
+     * @param p_departmentName The name of the department to create.
+     * @param p_shardManager The JDA object for the guild.
+     */
+    void createDepartmentInGuild(String p_departmentName, ShardManager p_shardManager);
+
+    /**
      * Delete a department by the department name.
      *
      * @param departmentName The name of the department to delete.
      */
     void deleteDepartment(String departmentName);
+
+    /**
+     * Delete the roles and categories associated with a department.
+     *
+     * @param p_departmentName The name of the department to delete.
+     * @param p_shardManager The JDA object for the guild.
+     */
+    void deleteDepartmentRoles(String p_departmentName, ShardManager p_shardManager);
 
     /**
      * Update an existing department.

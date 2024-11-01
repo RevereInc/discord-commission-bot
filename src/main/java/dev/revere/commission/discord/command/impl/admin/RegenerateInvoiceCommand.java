@@ -2,14 +2,12 @@ package dev.revere.commission.discord.command.impl.admin;
 
 import com.jagrosh.jdautilities.command.SlashCommand;
 import com.jagrosh.jdautilities.command.SlashCommandEvent;
+import dev.revere.commission.data.StripeInvoice;
 import dev.revere.commission.discord.utility.TonicEmbedBuilder;
 import dev.revere.commission.entities.Commission;
-import dev.revere.commission.factory.PaymentServiceFactory;
 import dev.revere.commission.repository.CommissionRepository;
 import dev.revere.commission.services.PaymentService;
-import dev.revere.commission.services.impl.PayPalServiceImpl;
 import net.dv8tion.jda.api.Permission;
-import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
@@ -18,7 +16,9 @@ import org.springframework.stereotype.Service;
 
 import java.awt.*;
 import java.time.Instant;
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * @author Remi
@@ -28,13 +28,13 @@ import java.util.Arrays;
 @Service
 public class RegenerateInvoiceCommand extends SlashCommand {
 
-    private final PaymentServiceFactory m_paymentServiceFactory;
     private final CommissionRepository m_commissionRepository;
+    private final PaymentService m_paymentService;
 
     @Autowired
-    public RegenerateInvoiceCommand(PaymentServiceFactory paymentServiceFactory, CommissionRepository commissionRepository) {
-        this.m_paymentServiceFactory = paymentServiceFactory;
-        this.m_commissionRepository = commissionRepository;
+    public RegenerateInvoiceCommand(CommissionRepository p_commissionRepository, PaymentService p_paymentService) {
+        this.m_commissionRepository = p_commissionRepository;
+        this.m_paymentService = p_paymentService;
 
         this.name = "regenerate-invoice";
         this.help = "Regenerate an invoice for a commission";
@@ -42,22 +42,23 @@ public class RegenerateInvoiceCommand extends SlashCommand {
         this.userPermissions = new Permission[]{Permission.ADMINISTRATOR};
         this.userMissingPermMessage = "You are missing the `ADMINISTRATOR` permission required to execute this command.";
 
-        OptionData commissionIdOption = new OptionData(OptionType.STRING, "commission_id", "The ID of the commission", false);
-        OptionData paymentServiceOption = new OptionData(OptionType.STRING, "payment_service", "The payment service to use", true);
+        final List<OptionData> optionData = new ArrayList<>();
 
-        for (String serviceName : paymentServiceFactory.getPaymentServices().keySet()) {
-            paymentServiceOption.addChoice(serviceName, serviceName);
-        }
-
-        this.options = Arrays.asList(paymentServiceOption, commissionIdOption);
+        optionData.add(new OptionData(OptionType.STRING, "quote", "The cost amount of the commission", false));
+        optionData.add(new OptionData(OptionType.STRING, "email", "The email of the client", false));
+        optionData.add(new OptionData(OptionType.STRING, "commission_id", "The ID of the commission", false));
+        this.options = optionData;
     }
 
     @Override
     protected void execute(SlashCommandEvent event) {
-        String selectedService = event.getOption("payment_service").getAsString();
-
         OptionMapping commissionIdOption = event.getOption("commission_id");
+        OptionMapping emailOption = event.getOption("email");
+        OptionMapping quoteOption = event.getOption("quote");
+
         Commission commission;
+        String email;
+        String quote;
 
         if (commissionIdOption != null) {
             String commissionId = commissionIdOption.getAsString();
@@ -72,38 +73,48 @@ public class RegenerateInvoiceCommand extends SlashCommand {
             return;
         }
 
+        if (emailOption != null) {
+            email = emailOption.getAsString();
+        } else {
+            if (commission.hasInvoice()) {
+                email = commission.getInvoice().getClientEmail();
+            } else {
+                event.reply(TonicEmbedBuilder.sharedMessageEmbed("The email of the client is required to regenerate the invoice."))
+                        .setEphemeral(true)
+                        .queue();
+                return;
+            }
+        }
+
+        if (quoteOption != null) {
+            quote = quoteOption.getAsString();
+        } else {
+            quote = commission.getQuote();
+        }
+
         try {
-            PaymentService paymentService = m_paymentServiceFactory.getPaymentService(selectedService);
-            String invoiceId = paymentService instanceof PayPalServiceImpl ? paymentService.createInvoice(commission, Double.parseDouble(commission.getQuote()),
-                    """
-                            Commission Payment
-                            Commission ID: %s
-                            Description: %s
-                            Amount: %s
-                            """
-                            .formatted(commission.getId(), commission.getDescription(), commission.getFormattedQuote())
-            ) : paymentService.createInvoice(commission, Double.parseDouble(commission.getQuote()), commission.getClient() + " | " + commission.getCategory() + " Service Payment");
-            paymentService.updateCommissionWithInvoiceDetails(commission, invoiceId);
+            StripeInvoice invoice = m_paymentService.createInvoice(commission, email, quote);
+            commission.setInvoice(invoice);
+            m_commissionRepository.save(commission);
 
             String description = String.format(
                     """
-                    A new payment invoice has been generated for your commission.
-                    ### <:1270455353620041829:1299806081140133898> Commission Details
-                    - **Amount:** %s
-                    - **Description:** %s
-                    ### <:1270673327098167347:1299806215915700315> Payment Information
-                    - **Payment Service:** %s
-                    - **Payment Link:** %s
-                    Click the payment link above to complete your payment.
-                    """,
+                            A new payment invoice has been generated for your commission.
+                            ### <:1270455353620041829:1299806081140133898> Commission Details
+                            - **Amount:** %s
+                            - **Description:** %s
+                            ### <:1270673327098167347:1299806215915700315> Payment Information
+                            - **Payment Service:** Stripe
+                            - **Payment Link:** %s
+                            Click the payment link above to complete your payment.
+                            """,
                     commission.getFormattedQuote(),
                     commission.getDescription(),
-                    selectedService,
-                    paymentService.getPaymentLink(commission.getInvoiceId())
+                    invoice.getPaymentLink()
             );
 
             TonicEmbedBuilder embed = new TonicEmbedBuilder()
-                    .setTitle(" ")
+                    .setTitle("Invoice Regenerated")
                     .setDescription(description)
                     .setColor(Color.decode("#2b2d31"))
                     .setTimeStamp(Instant.now());

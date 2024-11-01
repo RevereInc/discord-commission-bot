@@ -1,5 +1,7 @@
 package dev.revere.commission.discord.command.impl.admin;
 
+import com.stripe.model.AccountLink;
+import com.stripe.param.AccountLinkCreateParams;
 import dev.revere.commission.Constants;
 import dev.revere.commission.discord.utility.TonicEmbedBuilder;
 import dev.revere.commission.entities.Department;
@@ -9,6 +11,7 @@ import com.jagrosh.jdautilities.command.SlashCommand;
 import com.jagrosh.jdautilities.command.SlashCommandEvent;
 import dev.revere.commission.services.DepartmentService;
 import dev.revere.commission.services.FreelancerService;
+import dev.revere.commission.services.PaymentService;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
@@ -16,7 +19,10 @@ import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.OptionData;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.awt.*;
@@ -32,14 +38,21 @@ import java.util.Objects;
  */
 @Service
 public class AddFreelancerCommand extends SlashCommand {
+    private static final Logger log = LoggerFactory.getLogger(AddFreelancerCommand.class);
+    @Value("${stripe.api-key}")
+    private String apiKey;
+
     private final FreelancerRepository m_freelancerRepository;
     private final FreelancerService m_freelancerService;
     private final DepartmentService m_departmentService;
+    private final PaymentService m_paymentService;
+
     @Autowired
-    public AddFreelancerCommand(final FreelancerRepository p_freelancerRepository, final FreelancerService p_freelancerService, final DepartmentService p_departmentService) {
+    public AddFreelancerCommand(final FreelancerRepository p_freelancerRepository, final FreelancerService p_freelancerService, final DepartmentService p_departmentService, PaymentService p_paymentService) {
         m_freelancerRepository = p_freelancerRepository;
         m_freelancerService = p_freelancerService;
         m_departmentService = p_departmentService;
+        m_paymentService = p_paymentService;
 
         this.name = "addfreelancer";
         this.help = "Add a freelancer to the database";
@@ -115,9 +128,6 @@ public class AddFreelancerCommand extends SlashCommand {
         freelancer.setUserId(member.getUser().getIdLong());
         freelancer.setPortfolio("");
 
-        m_freelancerService.addDepartment(freelancer, department);
-        m_freelancerRepository.save(freelancer);
-
         Role mainRole = Objects.requireNonNull(p_slashCommandEvent.getJDA().getRoleById(department.getMainGuildRoleId()));
         Role commissionRole = Objects.requireNonNull(p_slashCommandEvent.getJDA().getRoleById(department.getCommissionGuildRoleId()));
         Role globalRole = Objects.requireNonNull(p_slashCommandEvent.getJDA().getRoleById(Constants.GLOBAL_FREELANCER_ROLE_ID));
@@ -129,7 +139,22 @@ public class AddFreelancerCommand extends SlashCommand {
             commissionGuild.addRoleToMember(member, commissionRole).queue();
         }
 
-        p_slashCommandEvent.reply(createdFreelancer(freelancer.getName())).setEphemeral(false).queue();
+        String[] accountDetails = m_paymentService.createStripeAccount(member.getUser().getName());
+        if (accountDetails != null) {
+            String stripeAccountId = accountDetails[0];
+            String onboardingUrl = accountDetails[1];
+
+            freelancer.setStripeAccountId(stripeAccountId);
+
+            p_slashCommandEvent.reply(TonicEmbedBuilder.sharedMessageEmbed("Please complete your onboarding process: " + onboardingUrl)).setEphemeral(true).queue();
+
+            m_freelancerService.addDepartment(freelancer, department);
+            m_freelancerRepository.save(freelancer);
+
+            p_slashCommandEvent.reply(createdFreelancer(freelancer.getName())).setEphemeral(false).queue();
+        } else {
+            p_slashCommandEvent.reply(TonicEmbedBuilder.sharedMessageEmbed("Failed to create Stripe account for freelancer.")).setEphemeral(true).queue();
+        }
     }
 
     /**

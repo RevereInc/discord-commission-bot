@@ -58,14 +58,6 @@ public interface CommissionRepository extends MongoRepository<Commission, String
     Optional<Commission> findCommissionByInvoiceId(String invoiceId);
 
     /**
-     * Find a commission by the Stripe payment link ID.
-     *
-     * @param stripePaymentLinkId The ID of the payment link associated with the commission.
-     * @return The Commission object associated with the given payment link ID.
-     */
-    Optional<Commission> findCommissionByStripePaymentLinkId(String stripePaymentLinkId);
-
-    /**
      * Retrieve a list of commissions ordered by creation date in descending order.
      *
      * @param pageable The pagination information.

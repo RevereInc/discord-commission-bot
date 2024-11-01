@@ -41,4 +41,7 @@ public class Freelancer implements Serializable {
 
     // List of title descriptions associated with the Freelancer
     private List<TitleDescription> titleDescriptions;
+
+    // The Stripe account ID associated with the Freelancer
+    private String stripeAccountId;
 }

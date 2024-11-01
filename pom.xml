@@ -80,6 +80,10 @@
 			<artifactId>vaadin-spring-boot-starter</artifactId>
 			<version>24.1.3</version>
 		</dependency>
+		<dependency>
+			<groupId>com.vaadin</groupId>
+			<artifactId>vaadin-charts-flow</artifactId>
+		</dependency>
 	</dependencies>
 
 	<build>

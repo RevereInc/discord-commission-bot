@@ -1,0 +1,266 @@
+html {
+    --lumo-base-color: #1C1C1C;
+    --secondary-base-color: #282828;
+
+    /* Main colors */
+    --lumo-primary-color: #fa8e60;
+    --lumo-primary-color-50pct: rgba(250, 150, 96, 0.5);
+    --lumo-primary-color-10pct: rgba(31, 31, 31, 1);
+
+    /* Error, Success, and other semantic colors */
+    --lumo-error-color: #ef4444;
+    --lumo-error-color-50pct: rgba(239, 68, 68, 0.5);
+    --lumo-error-color-10pct: rgba(239, 68, 68, 0.1);
+    --lumo-success-color: #22c55e;
+    --lumo-success-color-50pct: rgba(34, 197, 94, 0.5);
+    --lumo-success-color-10pct: rgba(34, 197, 94, 0.1);
+
+    /* Text colors */
+    --lumo-header-text-color: rgba(255, 255, 255, 0.9);
+    --lumo-body-text-color: rgba(255, 255, 255, 0.9);
+    --lumo-secondary-text-color: rgba(255, 255, 255, 0.7);
+    --lumo-tertiary-text-color: rgba(255, 255, 255, 0.5);
+    --lumo-disabled-text-color: rgba(255, 255, 255, 0.3);
+    --lumo-primary-text-color: var(--lumo-primary-color);
+
+    /* Background and surface colors */
+    --lumo-shade: hsl(0, 0%, 13%);  /* #212121 */
+    --lumo-shade-5pct: rgba(33, 33, 33, 0.05);
+    --lumo-shade-10pct: rgba(33, 33, 33, 0.1);
+    --lumo-shade-20pct: rgba(33, 33, 33, 0.2);
+    --lumo-shade-30pct: rgba(33, 33, 33, 0.3);
+    --lumo-shade-40pct: rgba(33, 33, 33, 0.4);
+    --lumo-shade-50pct: rgba(33, 33, 33, 0.5);
+    --lumo-shade-60pct: rgba(33, 33, 33, 0.6);
+    --lumo-shade-70pct: rgba(33, 33, 33, 0.7);
+    --lumo-shade-80pct: rgba(33, 33, 33, 0.8);
+    --lumo-shade-90pct: rgba(33, 33, 33, 0.9);
+
+    /* Tint colors */
+    --lumo-tint-5pct: rgba(23, 23, 23, 0.05);
+    --lumo-tint-10pct: rgba(23, 23, 23, 0.1);
+    --lumo-tint-20pct: rgba(23, 23, 23, 0.2);
+    --lumo-tint-30pct: rgba(23, 23, 23, 0.3);
+    --lumo-tint-40pct: rgba(23, 23, 23, 0.4);
+    --lumo-tint-50pct: rgba(23, 23, 23, 0.5);
+    --lumo-tint-60pct: rgba(23, 23, 23, 0.6);
+    --lumo-tint-70pct: rgba(23, 23, 23, 0.7);
+    --lumo-tint-80pct: rgba(23, 23, 23, 0.8);
+    --lumo-tint-90pct: rgba(23, 23, 23, 0.9);
+
+    /* Contrast colors */
+    --lumo-contrast-5pct: rgba(255, 255, 255, 0.05);
+    --lumo-contrast-10pct: rgba(255, 255, 255, 0.1);
+    --lumo-contrast-20pct: rgba(255, 255, 255, 0.2);
+    --lumo-contrast-30pct: rgba(255, 255, 255, 0.3);
+    --lumo-contrast-40pct: rgba(255, 255, 255, 0.4);
+    --lumo-contrast-50pct: rgba(255, 255, 255, 0.5);
+    --lumo-contrast-60pct: rgba(255, 255, 255, 0.6);
+    --lumo-contrast-70pct: rgba(255, 255, 255, 0.7);
+    --lumo-contrast-80pct: rgba(255, 255, 255, 0.8);
+    --lumo-contrast-90pct: rgba(255, 255, 255, 0.9);
+
+    /* Border radiuses */
+    --lumo-border-radius-s: 4px;
+    --lumo-border-radius-m: 6px;
+    --lumo-border-radius-l: 8px;
+
+    /* Shadow properties */
+    --lumo-box-shadow-xs: 0 1px 4px -1px rgba(0, 0, 0, 0.4);
+    --lumo-box-shadow-s: 0 2px 4px -1px rgba(0, 0, 0, 0.5);
+    --lumo-box-shadow-m: 0 3px 6px -1px rgba(0, 0, 0, 0.6);
+    --lumo-box-shadow-l: 0 4px 12px -1px rgba(0, 0, 0, 0.7);
+    --lumo-box-shadow-xl: 0 8px 24px -4px rgba(0, 0, 0, 0.8);
+}
+
+[theme~="dark"] {
+    background-color: var(--lumo-base-color);
+    color: var(--lumo-body-text-color);
+}
+
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+    color: var(--lumo-header-text-color) !important;
+}
+
+p, span, div {
+    color: var(--lumo-body-text-color);
+}
+
+/* Sidebar specific styles */
+vaadin-side-nav {
+    background-color: var(--lumo-base-color);
+    color: var(--lumo-body-text-color);
+}
+
+vaadin-side-nav-item {
+    color: var(--lumo-body-text-color) !important;
+}
+
+vaadin-side-nav-item::part(content) {
+    color: var(--lumo-body-text-color) !important;
+}
+
+vaadin-side-nav-item > a {
+    color: var(--lumo-body-text-color) !important;
+}
+
+vaadin-side-nav-item > a::part(content) {
+    color: var(--lumo-body-text-color) !important;
+}
+
+vaadin-side-nav-item[selected] {
+    color: var(--lumo-primary-color) !important;
+}
+
+vaadin-side-nav-item[selected]::part(content) {
+    color: var(--lumo-primary-color) !important;
+}
+
+/* Fix for the side nav items */
+.sidenav-item {
+    color: var(--lumo-body-text-color) !important;
+}
+
+.sidenav-item > a {
+    color: var(--lumo-body-text-color) !important;
+}
+
+/* Vaadin components */
+vaadin-app-layout::part(navbar) {
+    background-color: var(--lumo-base-color);
+    border-bottom: 1px solid var(--lumo-contrast-10pct);
+    color: var(--lumo-header-text-color);
+}
+
+vaadin-app-layout::part(drawer) {
+    background-color: var(--lumo-base-color);
+    border-right: 1px solid var(--lumo-contrast-10pct);
+    color: var(--lumo-body-text-color);
+}
+
+/* Navigation */
+vaadin-side-nav {
+    background-color: var(--lumo-base-color);
+    color: var(--lumo-body-text-color);
+}
+
+vaadin-side-nav-item {
+    color: var(--lumo-body-text-color);
+}
+
+/* Buttons */
+vaadin-button {
+    color: var(--lumo-body-text-color);
+    background-color: var(--lumo-contrast-5pct);
+}
+
+/* Cards */
+vaadin-board-row {
+    color: var(--lumo-body-text-color);
+}
+
+/* Form fields */
+vaadin-text-field,
+vaadin-text-area,
+vaadin-password-field {
+    color: var(--lumo-body-text-color);
+}
+
+/* Labels */
+label,
+vaadin-form-layout,
+vaadin-form-item {
+    color: var(--lumo-body-text-color);
+}
+
+/* Grid */
+vaadin-grid {
+    background-color: var(--lumo-base-color);
+    color: var(--lumo-body-text-color);
+}
+
+vaadin-grid-cell-content {
+    color: var(--lumo-body-text-color);
+}
+
+/* Dialogs */
+vaadin-dialog-overlay {
+    background-color: var(--lumo-base-color);
+    color: var(--lumo-body-text-color);
+}
+
+/* Tabs */
+vaadin-tabs {
+    color: var(--lumo-body-text-color);
+}
+
+vaadin-tab {
+    color: var(--lumo-body-text-color);
+}
+
+vaadin-menu-bar-button {
+    color: var(--lumo-body-text-color);
+}
+
+.dashboard-view {
+    padding: var(--lumo-space-m);
+}
+
+.welcome-text {
+    color: var(--lumo-primary-text-color);
+    margin-bottom: 0;
+}
+
+.overview-text {
+    color: var(--lumo-secondary-text-color);
+    margin-top: var(--lumo-space-s);
+    margin-bottom: var(--lumo-space-l);
+}
+
+/* Recent activity styles */
+.recent-activity {
+    background-color: var(--secondary-base-color);
+    border-radius: var(--lumo-border-radius-l);
+    box-shadow: var(--lumo-box-shadow-s);
+    padding: var(--lumo-space-m);
+    transition: transform 0.2s ease-in-out;
+}
+
+.recent-activity:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--lumo-box-shadow-m);
+}
+
+.recent-activity vaadin-horizontal-layout {
+    padding: var(--lumo-space-s) var(--lumo-space-m);
+    border-bottom: 1px solid var(--lumo-contrast-10pct);
+}
+
+.recent-activity vaadin-horizontal-layout:last-child {
+    border-bottom: none;
+}
+
+.recent-activity iron-icon {
+    color: var(--lumo-primary-color);
+    margin-right: var(--lumo-space-s);
+}
+
+/* Stat card styles */
+.stat-card {
+    background-color: var(--secondary-base-color);
+    border-radius: var(--lumo-border-radius-l);
+    box-shadow: var(--lumo-box-shadow-s);
+    padding: var(--lumo-space-m);
+    transition: transform 0.2s ease-in-out;
+}
+
+.stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--lumo-box-shadow-m);
+}
+
+.stats-container {
+    gap: var(--lumo-space-m);
+    margin-bottom: var(--lumo-space-l);
+}

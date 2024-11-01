@@ -5,7 +5,6 @@ import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H3;
 
-@CssImport("./styles/components/cards.css")
 public class Card extends Div {
     private final Div m_container;
 

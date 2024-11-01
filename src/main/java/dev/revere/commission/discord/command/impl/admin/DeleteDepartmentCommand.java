@@ -60,45 +60,8 @@ public class DeleteDepartmentCommand extends SlashCommand {
             return;
         }
 
-        deleteDepartmentRole(guild.getJDA(), departmentName, p_slashCommandEvent);
-    }
-
-    private void deleteDepartmentRole(JDA jda, String departmentName, SlashCommandInteractionEvent event) {
-        Department department = m_departmentRepository.findDepartmentByName(departmentName);
-        if (department == null) {
-            event.reply(TonicEmbedBuilder.sharedMessageEmbed("Failed to get department.")).queue();
-            return;
-        }
-        m_departmentRepository.delete(department);
-
-        Guild mainGuild = jda.getGuildById(Constants.MAIN_GUILD_ID);
-        if (mainGuild != null) {
-            Role mainRole = mainGuild.getRoleById(String.valueOf(department.getMainGuildRoleId()));
-            if (mainRole != null) {
-                mainRole.delete().queue(success -> {
-                    event.getChannel().sendMessage(TonicEmbedBuilder.sharedMessageEmbed("Role `" + departmentName + "` has been deleted from the main guild.")).queue();
-                }, failure -> event.getChannel().sendMessage(TonicEmbedBuilder.sharedMessageEmbed("Failed to delete role in main guild: " + failure.getMessage())).queue());
-            } else {
-                event.getChannel().sendMessage(TonicEmbedBuilder.sharedMessageEmbed("Role `" + departmentName + "` not found in the main guild.")).queue();
-            }
-        } else {
-            event.getChannel().sendMessage(TonicEmbedBuilder.sharedMessageEmbed("Failed to get main guild.")).queue();
-        }
-
-        Guild commissionGuild = jda.getGuildById(Constants.COMMISSION_GUILD_ID);
-        if (commissionGuild != null) {
-            Role commissionRole = commissionGuild.getRoleById(String.valueOf(department.getCommissionGuildRoleId()));
-            if (commissionRole != null) {
-                commissionRole.delete().queue(success -> {
-                    event.getChannel().sendMessage(TonicEmbedBuilder.sharedMessageEmbed("Role `" + departmentName + "` has been deleted from the commission guild.")).queue();
-                }, failure -> event.getChannel().sendMessage(TonicEmbedBuilder.sharedMessageEmbed("Failed to delete role in commission guild: " + failure.getMessage())).queue());
-            } else {
-                event.getChannel().sendMessage(TonicEmbedBuilder.sharedMessageEmbed("Role `" + departmentName + "` not found in the commission guild.")).queue();
-            }
-        } else {
-            event.getChannel().sendMessage(TonicEmbedBuilder.sharedMessageEmbed("Failed to get commission guild.")).queue();
-        }
-
-        event.getChannel().sendMessage(TonicEmbedBuilder.sharedMessageEmbed("Department `" + departmentName + "` has been deleted.")).queue();
+        m_departmentService.deleteDepartment(departmentName);
+        m_departmentService.deleteDepartmentRoles(departmentName, guild.getJDA().getShardManager());
+        p_slashCommandEvent.reply(TonicEmbedBuilder.sharedMessageEmbed("Department `" + departmentName + "` has been deleted.")).queue();
     }
 }

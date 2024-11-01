@@ -35,8 +35,6 @@ public interface CommissionService {
 
     void finishCommission(Commission p_commission, Member p_member);
 
-    void receivePayment(Commission p_commission, Member p_member);
-
     void cancelCommission(Commission p_commission);
 
     void deleteChannelIfExists(TextChannel p_textChannel);

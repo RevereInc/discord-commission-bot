@@ -1,17 +1,15 @@
 package dev.revere.commission.discord.event;
 
+import com.stripe.exception.StripeException;
 import dev.revere.commission.Constants;
-import dev.revere.commission.data.InvoiceDetails;
+import dev.revere.commission.data.StripeInvoice;
 import dev.revere.commission.discord.utility.TonicEmbedBuilder;
 import dev.revere.commission.entities.Commission;
 import dev.revere.commission.entities.Department;
-import dev.revere.commission.exception.PaymentException;
-import dev.revere.commission.factory.PaymentServiceFactory;
 import dev.revere.commission.repository.CommissionRepository;
 import dev.revere.commission.repository.DepartmentRepository;
 import dev.revere.commission.services.CommissionService;
 import dev.revere.commission.services.PaymentService;
-import dev.revere.commission.services.impl.StripeServiceImpl;
 import lombok.AllArgsConstructor;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Member;
@@ -52,7 +50,7 @@ public class ButtonClickEvent extends ListenerAdapter {
     private final CommissionRepository m_commissionRepository;
     private final DepartmentRepository m_departmentRepository;
     private final CommissionService m_commissionService;
-    private final PaymentServiceFactory m_paymentServiceFactory;
+    private final PaymentService m_paymentService;
 
     private final Map<Long, ScheduledFuture<?>> deletionTasks = new HashMap<>();
 
@@ -245,76 +243,60 @@ public class ButtonClickEvent extends ListenerAdapter {
 
             case "request-payment" -> {
                 Commission commission = m_commissionRepository.findCommissionByPublicChannelId(p_buttonInteractionEvent.getChannel().getIdLong());
-                if (!commission.isPaymentPending()) {
-                    p_buttonInteractionEvent.reply(TonicEmbedBuilder.sharedMessageEmbed("Payment has already been requested for this commission."))
-                            .setEphemeral(true)
-                            .queue();
-                    return;
-                }
 
-                if (commission.getInvoiceId() != null && !commission.getInvoiceId().isEmpty()) {
+                if (commission.hasInvoice()) {
                     try {
-                        String serviceType = commission.getPaymentService().toLowerCase();
-                        PaymentService paymentService = m_paymentServiceFactory.getPaymentService(serviceType);
+                        StripeInvoice invoice = m_paymentService.getInvoiceDetails(commission.getInvoice().getId());
 
-                        InvoiceDetails invoiceDetails = paymentService instanceof StripeServiceImpl
-                                ? paymentService.getInvoiceDetails(commission.getStripePaymentLinkId())
-                                : paymentService.getInvoiceDetails(commission.getInvoiceId());
-                        String paymentLink = paymentService.getPaymentLink(commission.getInvoiceId());
-
-                        String amountDetails = String.format("$%.2f", invoiceDetails.totalAmount());
-                        String status = invoiceDetails.status().toString();
+                        String totalAmount = commission.getFormattedQuote();
+                        String amountPaid = invoice.getFormattedAmountPaid();
+                        String amountRemaining = invoice.getFormattedAmountRemaining();
+                        String status = invoice.getStatus().toString();
+                        double progressPercentage = invoice.getProgressPercentage(commission);
 
                         String description = String.format(
                                 """
-                                An existing payment invoice has been found for your commission.
-                                ### <:1270455353620041829:1299806081140133898> Invoice Details
-                                - **Status:** %s
-                                - **Total Amount:** %s
-                                - **Payment Link:** %s
-                                ### <:1270673327098167347:1299806215915700315> Payment Service
-                                ```
-                                %s
-                                ```""",
+                                        ### <:1270455353620041829:1299806081140133898> Invoice Details
+                                        - **Status:** %s
+                                        - **Total Amount:** %s
+                                        - **Amount Paid:** %s
+                                        - **Amount Remaining:** %s
+                                        - **Progress:** %.2f%%
+                                        - **Payment Link:** %s
+                                        ### <:1270673327098167347:1299806215915700315> Payment Service
+                                        ```
+                                        Stripe
+                                        ```""",
                                 status,
-                                amountDetails,
-                                paymentLink,
-                                paymentService.getServiceName()
+                                totalAmount,
+                                amountPaid,
+                                amountRemaining,
+                                progressPercentage,
+                                invoice.getPaymentLink()
                         );
 
                         TonicEmbedBuilder embed = new TonicEmbedBuilder()
-                                .setTitle(" ")
+                                .setTitle("Payment Invoice")
                                 .setDescription(description)
                                 .setColor(Color.decode("#2b2d31"))
                                 .setTimeStamp(Instant.now());
 
-                        p_buttonInteractionEvent.reply(embed.build())
-                                .setEphemeral(true)
-                                .queue();
-                        return;
-                    } catch (PaymentException e) {
-                        e.printStackTrace();
+                        p_buttonInteractionEvent.reply(embed.build()).queue();
+                    } catch (StripeException e) {
                         p_buttonInteractionEvent.reply("Failed to retrieve invoice details. Please try again later.")
                                 .setEphemeral(true)
                                 .queue();
-                        return;
                     }
+                } else {
+                    Modal modal = Modal.create("request-payment-modal-" + commission.getId(), "Enter Email for Invoice")
+                            .addActionRow(TextInput.create("email", "Email", TextInputStyle.SHORT)
+                                    .setPlaceholder("Enter client email address")
+                                    .setRequired(true)
+                                    .build())
+                            .build();
+
+                    p_buttonInteractionEvent.replyModal(modal).queue();
                 }
-
-                StringSelectMenu.Builder selectionMenuBuilder = StringSelectMenu.create("payment-service-select")
-                        .setPlaceholder("Select Payment Service");
-
-                for (PaymentService service : m_paymentServiceFactory.getPaymentServices().values()) {
-                    String serviceName = service.getServiceName();
-                    selectionMenuBuilder.addOption(serviceName, serviceName.toLowerCase());
-                }
-
-                StringSelectMenu selectionMenu = selectionMenuBuilder.build();
-
-                p_buttonInteractionEvent.reply("Please select a payment service:")
-                        .addActionRow(selectionMenu)
-                        .setEphemeral(true)
-                        .queue();
             }
 
             case "cancel-ongoing-commission" -> {
@@ -332,7 +314,7 @@ public class ButtonClickEvent extends ListenerAdapter {
                     return;
                 }
 
-                if (commission.isPaymentPending()) {
+                if (!commission.getInvoice().isPaid()) {
                     p_buttonInteractionEvent.reply(TonicEmbedBuilder.sharedMessageEmbed("Waiting for payment before finishing commission")).queue();
                 } else {
                     m_commissionService.finishCommission(commission, p_buttonInteractionEvent.getMember());
