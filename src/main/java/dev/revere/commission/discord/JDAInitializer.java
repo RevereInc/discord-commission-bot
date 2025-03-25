@@ -43,7 +43,7 @@ public class JDAInitializer implements CommandLineRunner {
     @Override
     public void run(final String... args) {
         // Create and configure the ShardManager
-        String m_token = "ODAyODI2MzYzMjU4MTQyNzQx.GuNXeu.rKKpowJ0uym0vN-yc3l3iWQoI5KzX-W0_JoS2U";
+        String m_token = "YOUR-TOKEN"; // dont even try looking in commits for the old token.. its invalid.
         final DefaultShardManagerBuilder builder = DefaultShardManagerBuilder.createDefault(m_token);
 
         // Enable required intents
